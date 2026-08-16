@@ -96,7 +96,8 @@ export interface ParamHistoryEntry {
 }
 
 export interface CardioplegieData {
-  type: 'antegrade' | 'retrograde' | 'mixte' | ''
+  type: 'sang_froide' | 'sang_chaude' | 'cristalloide_froide' | 'del_nido' | 'custodiol' | 'st_thomas' | 'mixte' | ''
+  voie: 'anterograde' | 'retrograde' | 'mixte' | ''
   volume: number
   concentration: string
   temperature: number
@@ -200,7 +201,7 @@ function createNewCase(): CaseData {
       pao2: 200, pco2: 40, ph: 7.40, hb: 12, k: 4.0, lactates: 1.0, glycemie: 6.0,
     },
     cardioplegie: {
-      type: '', volume: 0, concentration: '', temperature: 4,
+      type: '', voie: '', volume: 0, concentration: '', temperature: 4,
       arretAortique: false, dureeArret: 0, administrations: [],
     },
     checklistPre: [

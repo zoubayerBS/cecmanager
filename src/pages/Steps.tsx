@@ -403,28 +403,26 @@ export function StepCEC() {
       <Card>
         <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Cardioplégie</h3>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
-          <Select label="Type" value={cardio.type} onChange={(v) => updateCardioplegie({ type: v as any })}
+          <Select label="Solution" value={cardio.type} onChange={(v) => updateCardioplegie({ type: v as any })}
             options={[
               { value: '', label: '—' },
-              { value: 'antegrade', label: 'Antégrade' },
+              { value: 'sang_froide', label: 'Sang froide' },
+              { value: 'sang_chaude', label: 'Sang normotherme' },
+              { value: 'cristalloide_froide', label: 'Cristalloïde froide' },
+              { value: 'del_nido', label: 'Del Nido' },
+              { value: 'custodiol', label: 'Custodiol (Bretschneider)' },
+              { value: 'st_thomas', label: 'St. Thomas' },
+              { value: 'mixte', label: 'Mixte (froide + chaude)' },
+            ]} />
+          <Select label="Voie" value={cardio.voie} onChange={(v) => updateCardioplegie({ voie: v as any })}
+            options={[
+              { value: '', label: '—' },
+              { value: 'anterograde', label: 'Antérograde' },
               { value: 'retrograde', label: 'Rétrograde' },
               { value: 'mixte', label: 'Mixte' },
             ]} />
-          <div className="flex flex-col gap-1">
-            <label className="text-[10px] font-semibold text-white/80 uppercase">Volume (mL)</label>
-            <input type="number" value={cardio.volume || ''} onChange={(e) => updateCardioplegie({ volume: Number(e.target.value) })}
-              className="w-full px-2 py-1.5 text-sm bg-white border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400 tabular-nums" placeholder="0" />
-          </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-[10px] font-semibold text-white/80 uppercase">Concentration K⁺</label>
-            <input type="text" value={cardio.concentration} onChange={(e) => updateCardioplegie({ concentration: e.target.value })}
-              className="w-full px-2 py-1.5 text-sm bg-white border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400" placeholder="mEq/L" />
-          </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-[10px] font-semibold text-white/80 uppercase">Durée arrêt (min)</label>
-            <input type="number" value={cardio.dureeArret || ''} onChange={(e) => updateCardioplegie({ dureeArret: Number(e.target.value) })}
-              className="w-full px-2 py-1.5 text-sm bg-white border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400 tabular-nums" placeholder="0" />
-          </div>
+          <Input label="Volume (mL)" type="number" value={cardio.volume} onChange={(v) => updateCardioplegie({ volume: Number(v) })} unit="mL" />
+          <Input label="Durée arrêt (min)" type="number" value={cardio.dureeArret} onChange={(v) => updateCardioplegie({ dureeArret: Number(v) })} unit="min" />
         </div>
 
         {/* Administrations */}

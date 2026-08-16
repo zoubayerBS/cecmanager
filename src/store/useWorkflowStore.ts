@@ -284,19 +284,57 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => ({
     caseData: { ...s.caseData, notes }
   })),
 
-  startCEC: () => set((s) => ({
-    caseData: { ...s.caseData, isRunning: true, startTime: new Date().toISOString(), endTime: null }
-  })),
-  stopCEC: () => set((s) => ({
-    caseData: { ...s.caseData, isRunning: false, endTime: new Date().toISOString(), clampStartTime: null, clampEndTime: null }
-  })),
+  startCEC: () => {
+    const now = new Date().toISOString()
+    const heure = new Date(now).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+    set((s) => ({
+      caseData: {
+        ...s.caseData,
+        isRunning: true,
+        startTime: now,
+        endTime: null,
+        evenements: [...s.caseData.evenements, { id: uuidv4(), heure, type: 'départ cec', description: 'Départ CEC' }],
+      }
+    }))
+  },
+  stopCEC: () => {
+    const now = new Date().toISOString()
+    const heure = new Date(now).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+    set((s) => ({
+      caseData: {
+        ...s.caseData,
+        isRunning: false,
+        endTime: now,
+        clampStartTime: null,
+        clampEndTime: null,
+        evenements: [...s.caseData.evenements, { id: uuidv4(), heure, type: 'fin cec', description: 'Fin CEC' }],
+      }
+    }))
+  },
 
-  startClampage: () => set((s) => ({
-    caseData: { ...s.caseData, clampStartTime: new Date().toISOString(), clampEndTime: null }
-  })),
-  stopClampage: () => set((s) => ({
-    caseData: { ...s.caseData, clampEndTime: new Date().toISOString() }
-  })),
+  startClampage: () => {
+    const now = new Date().toISOString()
+    const heure = new Date(now).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+    set((s) => ({
+      caseData: {
+        ...s.caseData,
+        clampStartTime: now,
+        clampEndTime: null,
+        evenements: [...s.caseData.evenements, { id: uuidv4(), heure, type: 'clampage aortique', description: 'Clampage aortique' }],
+      }
+    }))
+  },
+  stopClampage: () => {
+    const now = new Date().toISOString()
+    const heure = new Date(now).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+    set((s) => ({
+      caseData: {
+        ...s.caseData,
+        clampEndTime: now,
+        evenements: [...s.caseData.evenements, { id: uuidv4(), heure, type: 'déclampage aortique', description: 'Déclampage aortique' }],
+      }
+    }))
+  },
 
   saveCase: async () => {
     const { caseData, cases } = get()

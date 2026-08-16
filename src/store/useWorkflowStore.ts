@@ -218,6 +218,29 @@ function createNewCase(): CaseData {
   }
 }
 
+function migrateCase(c: any): CaseData {
+  const def = createNewCase()
+  return {
+    ...def,
+    ...c,
+    patient: { ...def.patient, ...(c.patient || {}) },
+    intervention: { ...def.intervention, ...(c.intervention || {}) },
+    materiel: { ...def.materiel, ...(c.materiel || {}), primeComposition: c.materiel?.primeComposition || def.materiel.primeComposition },
+    parametres: { ...def.parametres, ...(c.parametres || {}) },
+    checklistPre: c.checklistPre || def.checklistPre,
+    checklistPost: c.checklistPost || def.checklistPost,
+    bilan: c.bilan || [],
+    evenements: c.evenements || [],
+    paramHistory: c.paramHistory || [],
+    isRunning: c.isRunning ?? false,
+    startTime: c.startTime ?? null,
+    endTime: c.endTime ?? null,
+    clampStartTime: c.clampStartTime ?? null,
+    clampEndTime: c.clampEndTime ?? null,
+    notes: c.notes ?? '',
+  }
+}
+
 const STEP_ORDER: StepId[] = ['patient', 'intervention', 'materiel', 'pre-check', 'cec', 'bilan', 'rapport']
 
 export const useWorkflowStore = create<WorkflowStore>((set, get) => ({
@@ -387,7 +410,7 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => ({
   loadCase: (id) => {
     const { cases } = get()
     const found = cases.find((c) => c.id === id)
-    if (found) set({ caseData: found, currentStep: 'patient', view: 'workflow', steps: STEPS.map((s) => ({ ...s, completed: false })) })
+    if (found) set({ caseData: migrateCase(found), currentStep: 'patient', view: 'workflow', steps: STEPS.map((s) => ({ ...s, completed: false })) })
   },
 
   newCase: () => set({
@@ -410,7 +433,7 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => ({
   fetchCases: async () => {
     try {
       const cases = await fetchCases()
-      set({ cases })
+      set({ cases: cases.map(migrateCase) })
     } catch (err) {
       console.error('Failed to fetch cases:', err)
     }

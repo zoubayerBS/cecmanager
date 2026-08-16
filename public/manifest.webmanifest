@@ -1,0 +1,27 @@
+{
+  "name": "CEC Calculator",
+  "short_name": "CEC Calc",
+  "description": "Calculs pour la Circulation Extracorporelle - PWA pour perfusionnistes",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "landscape-primary",
+  "background_color": "#ffffff",
+  "theme_color": "#1a73e8",
+  "icons": [
+    {
+      "src": "pwa-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["medical", "health"],
+  "screenshots": [],
+  "prefer_related_applications": false
+}

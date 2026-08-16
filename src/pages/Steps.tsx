@@ -4,7 +4,7 @@ import {
   User, Scissors, Wrench, ClipboardCheck, Activity,
   Droplets, FileText, ChevronRight, ChevronLeft,
   Plus, Trash2, Play, Square, Clock, X, FlaskConical,
-  Beaker, HeartPulse, Thermometer, Wind, Zap,
+  Beaker, HeartPulse, Thermometer, Wind, Zap, Lock, Unlock,
 } from 'lucide-react'
 
 function pick<T>(arr: T[]): T { return arr[Math.floor(Math.random() * arr.length)] }
@@ -287,8 +287,22 @@ export function StepPreCheck() {
 }
 
 export function StepCEC() {
-  const { caseData, updateParametres, addEvenement, removeEvenement, startCEC, stopCEC, completeStep, nextStep, prevStep } = useWorkflowStore()
+  const { caseData, updateParametres, addEvenement, removeEvenement, startCEC, stopCEC, startClampage, stopClampage, completeStep, nextStep, prevStep } = useWorkflowStore()
   const p = caseData.parametres
+
+  const cecDuration = caseData.startTime
+    ? Math.floor(((caseData.endTime ? new Date(caseData.endTime) : new Date()).getTime() - new Date(caseData.startTime).getTime()) / 60000)
+    : 0
+
+  const clampDuration = caseData.clampStartTime
+    ? Math.floor(((caseData.clampEndTime ? new Date(caseData.clampEndTime) : new Date()).getTime() - new Date(caseData.clampStartTime).getTime()) / 60000)
+    : 0
+
+  const formatDuration = (min: number) => {
+    const h = Math.floor(min / 60)
+    const m = min % 60
+    return h > 0 ? `${h}h${m.toString().padStart(2, '0')}` : `${m} min`
+  }
 
   return (
     <div className="space-y-4">
@@ -302,7 +316,7 @@ export function StepCEC() {
             <span className="text-sm font-medium">{caseData.isRunning ? 'Perfusion active' : 'En attente'}</span>
             {caseData.startTime && (
               <span className="text-xs ml-2 opacity-70">
-                {Math.floor((Date.now() - new Date(caseData.startTime).getTime()) / 60000)} min
+                {formatDuration(cecDuration)}
               </span>
             )}
           </div>
@@ -317,6 +331,53 @@ export function StepCEC() {
           </button>
         )}
       </div>
+
+      {/* Durées */}
+      {(caseData.startTime || caseData.clampStartTime) && (
+        <div className="grid grid-cols-2 gap-2">
+          <div className="rounded-xl border border-gray-200 p-3 text-center bg-white">
+            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Durée CEC</p>
+            <p className="text-xl font-bold mt-1 tabular-nums">{formatDuration(cecDuration)}</p>
+            {caseData.startTime && (
+              <p className="text-[10px] text-gray-400 mt-0.5">
+                {new Date(caseData.startTime).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                {caseData.endTime && ` → ${new Date(caseData.endTime).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`}
+              </p>
+            )}
+          </div>
+          <div className="rounded-xl border border-gray-200 p-3 text-center bg-white">
+            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Durée clampage</p>
+            <p className="text-xl font-bold mt-1 tabular-nums">{formatDuration(clampDuration)}</p>
+            {caseData.clampStartTime && (
+              <p className="text-[10px] text-gray-400 mt-0.5">
+                {new Date(caseData.clampStartTime).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                {caseData.clampEndTime && ` → ${new Date(caseData.clampEndTime).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Clampage control */}
+      {caseData.isRunning && (
+        <div className={`rounded-xl px-4 py-3 flex items-center justify-between ${caseData.clampStartTime && !caseData.clampEndTime ? 'bg-amber-50 border border-amber-200' : 'bg-gray-50 border border-gray-200'}`}>
+          <div className="flex items-center gap-2">
+            <div className={`w-2.5 h-2.5 rounded-full ${caseData.clampStartTime && !caseData.clampEndTime ? 'bg-amber-500 animate-pulse' : 'bg-gray-300'}`} />
+            <span className="text-sm font-medium text-gray-700">
+              {caseData.clampStartTime && !caseData.clampEndTime ? 'Clampage actif' : 'Clampage'}
+            </span>
+          </div>
+          {!caseData.clampStartTime || caseData.clampEndTime ? (
+            <button onClick={startClampage} className="flex items-center gap-2 px-3 py-1.5 bg-amber-500 text-white rounded-lg text-xs font-medium hover:bg-amber-600 transition-colors">
+              <Lock size={12} /> Clamp
+            </button>
+          ) : (
+            <button onClick={stopClampage} className="flex items-center gap-2 px-3 py-1.5 bg-white border border-amber-300 text-amber-700 rounded-lg text-xs font-medium hover:bg-amber-50 transition-colors">
+              <Unlock size={12} /> Déclamp
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Paramètres */}
       <Card>
@@ -481,6 +542,20 @@ export function StepRapport() {
   const { caseData, saveCase, prevStep, newCase } = useWorkflowStore()
   const [saved, setSaved] = useState(false)
 
+  const cecDuration = caseData.startTime
+    ? Math.floor(((caseData.endTime ? new Date(caseData.endTime) : new Date()).getTime() - new Date(caseData.startTime).getTime()) / 60000)
+    : 0
+
+  const clampDuration = caseData.clampStartTime
+    ? Math.floor(((caseData.clampEndTime ? new Date(caseData.clampEndTime) : new Date()).getTime() - new Date(caseData.clampStartTime).getTime()) / 60000)
+    : 0
+
+  const formatDuration = (min: number) => {
+    const h = Math.floor(min / 60)
+    const m = min % 60
+    return h > 0 ? `${h}h${m.toString().padStart(2, '0')}` : `${m} min`
+  }
+
   const handleSave = () => {
     saveCase()
     setSaved(true)
@@ -497,7 +572,8 @@ export function StepRapport() {
           <Row label="Intervention" value={`${caseData.intervention.type || '—'} — Dr ${caseData.intervention.chirurgien || '—'}`} />
           <Row label="Équipe" value={`${caseData.intervention.perfusionniste || '—'} / ${caseData.intervention.anesthesiste || '—'}`} />
           <Row label="Matériel" value={`${caseData.materiel.oxygateur || '—'} — ${caseData.materiel.canuleArterielle || '—'}`} />
-          <Row label="Durée CEC" value={caseData.startTime ? `${Math.round((Date.now() - new Date(caseData.startTime).getTime()) / 60000)} min` : '—'} />
+          <Row label="Durée CEC" value={cecDuration > 0 ? formatDuration(cecDuration) : '—'} />
+          {clampDuration > 0 && <Row label="Durée clampage" value={formatDuration(clampDuration)} />}
           <Row label="Événements" value={`${caseData.evenements.length} enregistrés`} />
           <Row label="Bilan" value={`In ${caseData.bilan.filter((b) => b.type === 'entree').reduce((s, b) => s + b.volume, 0)} / Out ${caseData.bilan.filter((b) => b.type === 'sortie').reduce((s, b) => s + b.volume, 0)} mL`} />
         </div>

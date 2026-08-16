@@ -93,6 +93,9 @@ export interface CaseData {
   evenements: Evenement[]
   isRunning: boolean
   startTime: string | null
+  endTime: string | null
+  clampStartTime: string | null
+  clampEndTime: string | null
   notes: string
 }
 
@@ -128,6 +131,8 @@ interface WorkflowStore {
 
   startCEC: () => void
   stopCEC: () => void
+  startClampage: () => void
+  stopClampage: () => void
   saveCase: () => void
   loadCase: (id: string) => void
   deleteCase: (id: string) => void
@@ -190,6 +195,9 @@ function createNewCase(): CaseData {
     evenements: [],
     isRunning: false,
     startTime: null,
+    endTime: null,
+    clampStartTime: null,
+    clampEndTime: null,
     notes: '',
   }
 }
@@ -277,10 +285,17 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => ({
   })),
 
   startCEC: () => set((s) => ({
-    caseData: { ...s.caseData, isRunning: true, startTime: new Date().toISOString() }
+    caseData: { ...s.caseData, isRunning: true, startTime: new Date().toISOString(), endTime: null }
   })),
   stopCEC: () => set((s) => ({
-    caseData: { ...s.caseData, isRunning: false }
+    caseData: { ...s.caseData, isRunning: false, endTime: new Date().toISOString(), clampStartTime: null, clampEndTime: null }
+  })),
+
+  startClampage: () => set((s) => ({
+    caseData: { ...s.caseData, clampStartTime: new Date().toISOString(), clampEndTime: null }
+  })),
+  stopClampage: () => set((s) => ({
+    caseData: { ...s.caseData, clampEndTime: new Date().toISOString() }
   })),
 
   saveCase: async () => {

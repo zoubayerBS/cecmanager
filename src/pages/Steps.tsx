@@ -290,6 +290,8 @@ export function StepPreCheck() {
 export function StepCEC() {
   const { caseData, updateParametres, addEvenement, removeEvenement, startCEC, stopCEC, startClampage, stopClampage, completeStep, nextStep, prevStep } = useWorkflowStore()
   const p = caseData.parametres
+  const [noteModal, setNoteModal] = useState<{ evt: string; type: string } | null>(null)
+  const [noteText, setNoteText] = useState('')
 
   const cecDuration = caseData.startTime
     ? Math.floor(((caseData.endTime ? new Date(caseData.endTime) : new Date()).getTime() - new Date(caseData.startTime).getTime()) / 60000)
@@ -303,6 +305,22 @@ export function StepCEC() {
     const h = Math.floor(min / 60)
     const m = min % 60
     return h > 0 ? `${h}h${m.toString().padStart(2, '0')}` : `${m} min`
+  }
+
+  const handleLongPress = (evt: string, type: string) => {
+    setNoteText('')
+    setNoteModal({ evt, type })
+  }
+
+  const confirmNote = () => {
+    if (noteModal) {
+      addEvenement({
+        heure: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+        type: noteModal.type, description: noteModal.evt, note: noteText.trim() || undefined,
+      })
+      setNoteModal(null)
+      setNoteText('')
+    }
   }
 
   return (
@@ -446,13 +464,7 @@ export function StepCEC() {
                     })}
                     onPointerDown={(e) => {
                       const timer = setTimeout(() => {
-                        const note = prompt(`Note pour "${evt}" :`)
-                        if (note !== null && note.trim()) {
-                          addEvenement({
-                            heure: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
-                            type: evt.toLowerCase(), description: evt, note: note.trim(),
-                          })
-                        }
+                        handleLongPress(evt, evt.toLowerCase())
                       }, 500)
                       const cancel = () => { clearTimeout(timer); e.currentTarget.removeEventListener('pointerup', cancel); e.currentTarget.removeEventListener('pointerleave', cancel) }
                       e.currentTarget.addEventListener('pointerup', cancel)
@@ -497,6 +509,43 @@ export function StepCEC() {
       </Card>
 
       <Nav onPrev={prevStep} onNext={() => { completeStep('cec'); nextStep() }} />
+
+      {/* Note Modal */}
+      {noteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setNoteModal(null)}>
+          <div className="absolute inset-0 bg-black/40" />
+          <div className="relative bg-white rounded-2xl w-full max-w-sm p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <p className="text-sm font-bold text-gray-900">{noteModal.evt}</p>
+                <p className="text-xs text-gray-400">Ajouter une note</p>
+              </div>
+              <button onClick={() => setNoteModal(null)} className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg">
+                <X size={16} />
+              </button>
+            </div>
+            <textarea
+              autoFocus
+              value={noteText}
+              onChange={(e) => setNoteText(e.target.value)}
+              placeholder="Note optionnelle…"
+              rows={3}
+              className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-xl resize-none focus:border-gray-400 focus:outline-none transition-colors"
+              onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); confirmNote() } }}
+            />
+            <div className="flex gap-2 mt-3">
+              <button onClick={() => setNoteModal(null)}
+                className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">
+                Sans note
+              </button>
+              <button onClick={confirmNote}
+                className="flex-1 py-2.5 bg-black text-white rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors">
+                Ajouter
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

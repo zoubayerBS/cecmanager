@@ -91,7 +91,7 @@ export function DashboardPage() {
             </div>
             <div>
               <h1 className="text-lg font-bold text-gray-900">CEC Manager</h1>
-              <p className="text-xs text-gray-400">{cases.length} dossier{cases.length !== 1 ? 's' : ''}</p>
+              <p className="text-xs text-gray-400">{cases.length} dossier{cases.length !== 1 ? 's' : ''} · v{__APP_VERSION__}</p>
             </div>
           </div>
           <button onClick={handleNew}

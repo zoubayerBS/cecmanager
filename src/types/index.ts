@@ -1,3 +1,7 @@
+declare global {
+  const __APP_VERSION__: string
+}
+
 export type Tab =
   | 'transport-o2'
   | 'sca'

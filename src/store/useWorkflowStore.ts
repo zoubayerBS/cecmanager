@@ -81,6 +81,19 @@ export interface Evenement {
   description: string
 }
 
+export interface ParamHistoryEntry {
+  ts: string
+  minute: number
+  debit: number
+  pam: number
+  temperature: number
+  hct: number
+  svo2: number
+  hb: number
+  lactates: number
+  k: number
+}
+
 export interface CaseData {
   id: string
   patient: PatientData
@@ -91,6 +104,7 @@ export interface CaseData {
   checklistPost: ChecklistItem[]
   bilan: BilanItem[]
   evenements: Evenement[]
+  paramHistory: ParamHistoryEntry[]
   isRunning: boolean
   startTime: string | null
   endTime: string | null
@@ -193,6 +207,7 @@ function createNewCase(): CaseData {
     ],
     bilan: [],
     evenements: [],
+    paramHistory: [],
     isRunning: false,
     startTime: null,
     endTime: null,
@@ -243,9 +258,29 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => ({
   updateMateriel: (data) => set((s) => ({
     caseData: { ...s.caseData, materiel: { ...s.caseData.materiel, ...data } }
   })),
-  updateParametres: (data) => set((s) => ({
-    caseData: { ...s.caseData, parametres: { ...s.caseData.parametres, ...data } }
-  })),
+  updateParametres: (data) => set((s) => {
+    const newParams = { ...s.caseData.parametres, ...data }
+    const shouldRecord = s.caseData.isRunning && s.caseData.startTime
+    let paramHistory = s.caseData.paramHistory
+    if (shouldRecord) {
+      const now = new Date()
+      const minute = Math.floor((now.getTime() - new Date(s.caseData.startTime!).getTime()) / 60000)
+      const entry: ParamHistoryEntry = {
+        ts: now.toISOString(),
+        minute,
+        debit: newParams.debit,
+        pam: newParams.pam,
+        temperature: newParams.temperature,
+        hct: newParams.hct,
+        svo2: newParams.svo2,
+        hb: newParams.hb,
+        lactates: newParams.lactates,
+        k: newParams.k,
+      }
+      paramHistory = [...paramHistory, entry]
+    }
+    return { caseData: { ...s.caseData, parametres: newParams, paramHistory } }
+  }),
   addPrimeItem: (item) => set((s) => ({
     caseData: { ...s.caseData, materiel: { ...s.caseData.materiel, primeComposition: [...s.caseData.materiel.primeComposition, item] } }
   })),

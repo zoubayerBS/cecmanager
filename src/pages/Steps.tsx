@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useWorkflowStore } from '../store/useWorkflowStore'
+import { Graphiques } from '../components/Graphiques'
 import {
   User, Scissors, Wrench, ClipboardCheck, Activity,
   Droplets, FileText, ChevronRight, ChevronLeft,
@@ -393,6 +394,9 @@ export function StepCEC() {
           <Param icon={<Zap size={14} />} label="K⁺" value={p.k} onChange={(v) => updateParametres({ k: v })} unit="mmol/L" step={0.1} gradient="bg-gradient-to-br from-indigo-400 to-indigo-500 text-white shadow-md shadow-indigo-200" />
         </div>
       </Card>
+
+      {/* Graphiques */}
+      <Graphiques history={caseData.paramHistory} />
 
       {/* Événements */}
       <Card>

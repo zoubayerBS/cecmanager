@@ -422,7 +422,6 @@ export function StepCEC() {
               { value: 'mixte', label: 'Mixte' },
             ]} />
           <Input label="Volume (mL)" type="number" value={cardio.volume} onChange={(v) => updateCardioplegie({ volume: Number(v) })} unit="mL" />
-          <Input label="Durée arrêt (min)" type="number" value={cardio.dureeArret} onChange={(v) => updateCardioplegie({ dureeArret: Number(v) })} unit="min" />
         </div>
 
         {/* Administrations */}

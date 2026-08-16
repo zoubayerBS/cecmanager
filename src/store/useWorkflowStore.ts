@@ -102,7 +102,6 @@ export interface CardioplegieData {
   concentration: string
   temperature: number
   arretAortique: boolean
-  dureeArret: number
   administrations: { heure: string; volume: number; type: string }[]
 }
 
@@ -202,7 +201,7 @@ function createNewCase(): CaseData {
     },
     cardioplegie: {
       type: '', voie: '', volume: 0, concentration: '', temperature: 4,
-      arretAortique: false, dureeArret: 0, administrations: [],
+      arretAortique: false, administrations: [],
     },
     checklistPre: [
       { id: '1', label: 'Patient identifié, consentement vérifié', checked: false },

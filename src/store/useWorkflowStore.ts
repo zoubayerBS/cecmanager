@@ -328,11 +328,23 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => ({
     caseData: { ...s.caseData, cardioplegie: { ...s.caseData.cardioplegie, ...data } }
   })),
   addAdminCardio: (admin) => set((s) => ({
-    caseData: { ...s.caseData, cardioplegie: { ...s.caseData.cardioplegie, administrations: [...s.caseData.cardioplegie.administrations, admin] } }
+    caseData: {
+      ...s.caseData,
+      cardioplegie: { ...s.caseData.cardioplegie, administrations: [...s.caseData.cardioplegie.administrations, admin] },
+      bilan: [...s.caseData.bilan, { id: uuidv4(), heure: admin.heure, type: 'entree' as const, categorie: 'Cardioplégie', volume: admin.volume }],
+    }
   })),
-  removeAdminCardio: (index) => set((s) => ({
-    caseData: { ...s.caseData, cardioplegie: { ...s.caseData.cardioplegie, administrations: s.caseData.cardioplegie.administrations.filter((_, i) => i !== index) } }
-  })),
+  removeAdminCardio: (index) => set((s) => {
+    const admin = s.caseData.cardioplegie.administrations[index]
+    const cardioBilan = s.caseData.bilan.filter(b => !(b.categorie === 'Cardioplégie' && b.heure === admin?.heure && b.volume === admin?.volume))
+    return {
+      caseData: {
+        ...s.caseData,
+        cardioplegie: { ...s.caseData.cardioplegie, administrations: s.caseData.cardioplegie.administrations.filter((_, i) => i !== index) },
+        bilan: cardioBilan,
+      }
+    }
+  }),
   addPrimeItem: (item) => set((s) => ({
     caseData: { ...s.caseData, materiel: { ...s.caseData.materiel, primeComposition: [...s.caseData.materiel.primeComposition, item] } }
   })),

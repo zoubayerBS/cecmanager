@@ -430,9 +430,10 @@ export function StepCEC() {
           <div className="flex items-center justify-between">
             <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Administrations</p>
             <button onClick={() => {
+              const vol = cardio.volume || 200
               const heure = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
-              addAdminCardio({ heure, volume: 200, type: cardio.type || 'antegrade' })
-              addEvenement({ heure, type: 'cardioplégie', description: `Cardioplégie ${cardio.type || ''} ${200}mL` })
+              addAdminCardio({ heure, volume: vol, type: cardio.type || 'antegrade' })
+              addEvenement({ heure, type: 'cardioplégie', description: `Cardioplégie ${cardio.type || ''} ${vol}mL` })
             }} className="text-xs text-gray-500 hover:text-black font-medium px-2 py-1 hover:bg-gray-100 rounded-lg transition-colors">
               + Admin
             </button>

@@ -569,6 +569,11 @@ export function StepRapport() {
     setTimeout(() => setSaved(false), 2000)
   }
 
+  const handlePDF = async () => {
+    const { exportPDF } = await import('../rapport/exportPDF')
+    exportPDF(caseData)
+  }
+
   return (
     <div className="space-y-4">
       <Header icon={<FileText size={20} />} title="Rapport" subtitle="Résumé et sauvegarde" />
@@ -592,6 +597,9 @@ export function StepRapport() {
         </button>
         <button onClick={newCase} className="flex-1 flex items-center justify-center gap-2 py-3 border border-gray-200 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors">
           Nouveau
+        </button>
+        <button onClick={handlePDF} className="flex items-center justify-center gap-2 px-4 py-3 border border-gray-200 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors">
+          <FileText size={15} /> PDF
         </button>
         <button onClick={handleSave} className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium text-white transition-colors ${saved ? 'bg-green-600' : 'bg-black hover:bg-gray-800'}`}>
           {saved ? '✓ Sauvegardé' : 'Sauvegarder'}

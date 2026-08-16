@@ -15,7 +15,7 @@ function randInt(min: number, max: number) { return Math.floor(Math.random() * (
 function fillRandomData(updatePatient: any, updateIntervention: any, updateMateriel: any, updateParametres: any, addEvenement: any, addBilanItem: any) {
   const noms = ['Dupont', 'Martin', 'Bernard', 'Dubois', 'Thomas', 'Robert', 'Leroy', 'Moreau', 'Simon', 'Laurent']
   const prenoms = ['Jean', 'Pierre', 'Michel', 'André', 'Philippe', 'Marie', 'Françoise', 'Catherine', 'Sylvie', 'Nathalie']
-  const actes = ['CABG (Pontage coronarien)', 'CABG x3', 'Remplacement valve mitrale', 'Réparation valve aortique', 'CLOS (Closure of ASD/VSD)', 'Myxome atrial gauche', 'Transplantation cardiaque', 'Correction de Fallot']
+  const actes = ['PAC (Pontage coronarien)', 'PAC x3', 'Remplacement valve mitrale', 'Réparation valve aortique', 'CLOS (Closure of ASD/VSD)', 'Myxome atrial gauche', 'Transplantation cardiaque', 'Correction de Fallot']
   const chirurgiens = ['Martin', 'Bernard', 'Dubois', 'Thomas', 'Lefebvre', 'Moreau', 'Garcia']
   const anesthesistes = ['Dr Petit', 'Dr Durand', 'Dr Leroy', 'Dr Simon', 'Dr Michel']
   const perfusionnistes = ['Tech. Dupont', 'Tech. Robert', 'Tech. Richard', 'Tech. Boyer']
@@ -147,9 +147,9 @@ export function StepIntervention() {
         <Grid>
           <DatePicker label="Date" value={i.date} onChange={(v) => updateIntervention({ date: v })} />
           <Input label="Type" value={i.type} onChange={(v) => updateIntervention({ type: v })} required placeholder="Taper pour rechercher…" suggestions={[
-            'CABG (Pontage coronarien)',
-            'CABG x3',
-            'CABG x4',
+            'PAC (Pontage coronarien)',
+            'PAC x3',
+            'PAC x4',
             'Remplacement valve mitrale',
             'Réparation valve mitrale',
             'Remplacement valve aortique',

@@ -20,8 +20,8 @@ export function Input({
   placeholder
 }: InputProps) {
   return (
-    <div className="flex flex-col gap-2">
-      <label className="text-sm font-medium text-gray-600">{label}</label>
+    <div className="flex flex-col gap-1">
+      <label className="text-xs font-medium text-gray-500">{label}</label>
       <div className="relative">
         <input
           type="number"
@@ -31,10 +31,10 @@ export function Input({
           max={max}
           step={step}
           placeholder={placeholder}
-          className="w-full px-4 py-3 pr-12 text-lg border-2 border-gray-200 rounded-xl bg-gray-50 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 focus:outline-none transition-all"
+          className={`w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-gray-50 focus:border-gray-400 focus:bg-white focus:outline-none transition-colors tabular-nums ${unit ? 'pr-10' : ''}`}
         />
         {unit && (
-          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none">
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-400 font-medium pointer-events-none">
             {unit}
           </span>
         )}

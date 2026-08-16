@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useWorkflowStore } from './store/useWorkflowStore'
 import { Stepper } from './components/Stepper'
+import { Sidebar } from './components/Sidebar'
 import { Activity, ArrowLeft, LogOut } from 'lucide-react'
 import { DashboardPage } from './pages/DashboardPage'
+import { FormulasPage } from './pages/FormulasPage'
+import { ProfilePage } from './pages/ProfilePage'
 import { AuthPage } from './pages/AuthPage'
 import { isLoggedIn, logout, getCurrentUser, onAuthChange } from './lib/supabase'
 import {
@@ -18,7 +21,8 @@ import {
 export default function App() {
   const [authenticated, setAuthenticated] = useState<boolean | null>(null)
   const [user, setUser] = useState<any>(null)
-  const { view, currentStep, caseData, goToDashboard, saveCase } = useWorkflowStore()
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const { view, currentStep, caseData, goToDashboard, goToFormulas, goToProfile, saveCase } = useWorkflowStore()
 
   useEffect(() => {
     isLoggedIn().then((v) => {
@@ -44,6 +48,14 @@ export default function App() {
     setUser(null)
   }
 
+  const userName = user?.user_metadata?.name
+
+  const handleNavigate = (targetView: 'dashboard' | 'workflow' | 'formulas' | 'profile') => {
+    if (targetView === 'dashboard') goToDashboard()
+    else if (targetView === 'formulas') goToFormulas()
+    else if (targetView === 'profile') goToProfile()
+  }
+
   if (authenticated === null) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -59,11 +71,47 @@ export default function App() {
   if (view === 'dashboard') {
     return (
       <div>
-        <DashboardPage />
-        <button onClick={handleLogout}
-          className="fixed bottom-4 right-4 p-3 bg-white border border-gray-200 rounded-xl text-gray-400 hover:text-red-500 hover:border-red-200 transition-colors shadow-sm z-50">
-          <LogOut size={18} />
-        </button>
+        <Sidebar
+          isOpen={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
+          view={view}
+          onNavigate={handleNavigate}
+          onLogout={handleLogout}
+          userName={userName}
+        />
+        <DashboardPage onOpenSidebar={() => setSidebarOpen(true)} />
+      </div>
+    )
+  }
+
+  if (view === 'formulas') {
+    return (
+      <div>
+        <Sidebar
+          isOpen={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
+          view={view}
+          onNavigate={handleNavigate}
+          onLogout={handleLogout}
+          userName={userName}
+        />
+        <FormulasPage onOpenSidebar={() => setSidebarOpen(true)} />
+      </div>
+    )
+  }
+
+  if (view === 'profile') {
+    return (
+      <div>
+        <Sidebar
+          isOpen={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
+          view={view}
+          onNavigate={handleNavigate}
+          onLogout={handleLogout}
+          userName={userName}
+        />
+        <ProfilePage onOpenSidebar={() => setSidebarOpen(true)} user={user} />
       </div>
     )
   }
@@ -83,14 +131,27 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <Sidebar
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        view={view}
+        onNavigate={handleNavigate}
+        onLogout={handleLogout}
+        userName={userName}
+      />
+
       <header className="bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between sticky top-0 z-50">
         <div className="flex items-center gap-3">
           <button onClick={() => { saveCase(); goToDashboard() }} className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors">
             <ArrowLeft size={18} className="text-gray-600" />
           </button>
-          <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="w-8 h-8 bg-black rounded-lg flex items-center justify-center"
+            aria-label="Ouvrir le menu"
+          >
             <Activity size={16} className="text-white" />
-          </div>
+          </button>
           <div>
             <h1 className="text-sm font-semibold text-gray-900">
               {caseData.patient.nom || 'Nouveau dossier'} {caseData.patient.prenom}

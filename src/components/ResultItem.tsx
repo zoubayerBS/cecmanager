@@ -7,11 +7,11 @@ interface ResultItemProps {
 
 export function ResultItem({ label, value, unit, warning }: ResultItemProps) {
   return (
-    <div className="flex justify-between items-center py-3 border-b border-blue-200 last:border-b-0">
-      <span className="text-gray-700">{label}</span>
-      <span className={`text-lg font-semibold ${warning ? 'text-orange-500' : 'text-blue-600'}`}>
+    <div className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
+      <span className="text-xs text-gray-400">{label}</span>
+      <span className={`text-sm font-medium tabular-nums ${warning ? 'text-orange-500' : 'text-gray-700'}`}>
         {value}
-        {unit && <span className="text-sm font-normal text-gray-500 ml-1">{unit}</span>}
+        {unit && <span className="text-[10px] text-gray-400 font-normal ml-1">{unit}</span>}
       </span>
     </div>
   )

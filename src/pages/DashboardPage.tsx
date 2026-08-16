@@ -8,7 +8,7 @@ import type { CaseData } from '../store/useWorkflowStore'
 
 const PAGE_SIZE = 5
 
-export function DashboardPage() {
+export function DashboardPage({ onOpenSidebar }: { onOpenSidebar?: () => void }) {
   const { cases, loadCase, deleteCase, newCase, fetchCases } = useWorkflowStore()
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(0)
@@ -86,9 +86,13 @@ export function DashboardPage() {
       <div className="bg-white border-b border-gray-100 px-4 py-4 sticky top-0 z-40">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center">
+            <button
+              onClick={onOpenSidebar}
+              className="w-10 h-10 bg-black rounded-xl flex items-center justify-center"
+              aria-label="Ouvrir le menu"
+            >
               <Activity size={20} className="text-white" />
-            </div>
+            </button>
             <div>
               <h1 className="text-lg font-bold text-gray-900">CEC Manager</h1>
               <p className="text-xs text-gray-400">{cases.length} dossier{cases.length !== 1 ? 's' : ''} · v{__APP_VERSION__}</p>

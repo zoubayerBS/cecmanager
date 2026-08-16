@@ -126,7 +126,7 @@ export interface CaseData {
 }
 
 // ===== Store =====
-type ViewMode = 'dashboard' | 'workflow'
+type ViewMode = 'dashboard' | 'workflow' | 'formulas' | 'profile'
 
 interface WorkflowStore {
   view: ViewMode
@@ -136,6 +136,8 @@ interface WorkflowStore {
   cases: CaseData[]
 
   goToDashboard: () => void
+  goToFormulas: () => void
+  goToProfile: () => void
   goToStep: (step: StepId) => void
   nextStep: () => void
   prevStep: () => void
@@ -270,6 +272,8 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => ({
   cases: [],
 
   goToDashboard: () => set({ view: 'dashboard' }),
+  goToFormulas: () => set({ view: 'formulas' }),
+  goToProfile: () => set({ view: 'profile' }),
   goToStep: (step) => set({ currentStep: step }),
   
   nextStep: () => {

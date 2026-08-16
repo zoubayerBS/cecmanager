@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useWorkflowStore } from '../store/useWorkflowStore'
 import {
   User, Scissors, Wrench, ClipboardCheck, Activity,
@@ -541,14 +541,21 @@ export function StepBilan() {
 export function StepRapport() {
   const { caseData, saveCase, prevStep, newCase } = useWorkflowStore()
   const [saved, setSaved] = useState(false)
+  const [now, setNow] = useState(Date.now())
+
+  useEffect(() => {
+    if (!caseData.startTime) return
+    const id = setInterval(() => setNow(Date.now()), 1000)
+    return () => clearInterval(id)
+  }, [caseData.startTime])
 
   const cecDuration = caseData.startTime
-    ? Math.floor(((caseData.endTime ? new Date(caseData.endTime) : new Date()).getTime() - new Date(caseData.startTime).getTime()) / 60000)
-    : 0
+    ? Math.floor(((caseData.endTime ? new Date(caseData.endTime).getTime() : now) - new Date(caseData.startTime).getTime()) / 60000)
+    : -1
 
   const clampDuration = caseData.clampStartTime
-    ? Math.floor(((caseData.clampEndTime ? new Date(caseData.clampEndTime) : new Date()).getTime() - new Date(caseData.clampStartTime).getTime()) / 60000)
-    : 0
+    ? Math.floor(((caseData.clampEndTime ? new Date(caseData.clampEndTime).getTime() : now) - new Date(caseData.clampStartTime).getTime()) / 60000)
+    : -1
 
   const formatDuration = (min: number) => {
     const h = Math.floor(min / 60)
@@ -572,8 +579,8 @@ export function StepRapport() {
           <Row label="Intervention" value={`${caseData.intervention.type || '—'} — Dr ${caseData.intervention.chirurgien || '—'}`} />
           <Row label="Équipe" value={`${caseData.intervention.perfusionniste || '—'} / ${caseData.intervention.anesthesiste || '—'}`} />
           <Row label="Matériel" value={`${caseData.materiel.oxygateur || '—'} — ${caseData.materiel.canuleArterielle || '—'}`} />
-          <Row label="Durée CEC" value={cecDuration > 0 ? formatDuration(cecDuration) : '—'} />
-          {clampDuration > 0 && <Row label="Durée clampage" value={formatDuration(clampDuration)} />}
+          <Row label="Durée CEC" value={cecDuration >= 0 ? formatDuration(cecDuration) : '—'} />
+          {clampDuration >= 0 && <Row label="Durée clampage" value={formatDuration(clampDuration)} />}
           <Row label="Événements" value={`${caseData.evenements.length} enregistrés`} />
           <Row label="Bilan" value={`In ${caseData.bilan.filter((b) => b.type === 'entree').reduce((s, b) => s + b.volume, 0)} / Out ${caseData.bilan.filter((b) => b.type === 'sortie').reduce((s, b) => s + b.volume, 0)} mL`} />
         </div>

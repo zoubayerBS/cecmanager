@@ -288,8 +288,9 @@ export function StepPreCheck() {
 }
 
 export function StepCEC() {
-  const { caseData, updateParametres, addEvenement, removeEvenement, startCEC, stopCEC, startClampage, stopClampage, completeStep, nextStep, prevStep } = useWorkflowStore()
+  const { caseData, updateParametres, updateCardioplegie, addAdminCardio, removeAdminCardio, addEvenement, removeEvenement, startCEC, stopCEC, startClampage, stopClampage, completeStep, nextStep, prevStep } = useWorkflowStore()
   const p = caseData.parametres
+  const cardio = caseData.cardioplegie
   const [noteModal, setNoteModal] = useState<{ evt: string; type: string } | null>(null)
   const [noteText, setNoteText] = useState('')
 
@@ -397,6 +398,71 @@ export function StepCEC() {
           )}
         </div>
       )}
+
+      {/* Cardioplégie */}
+      <Card>
+        <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Cardioplégie</h3>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
+          <div className="flex flex-col gap-1">
+            <label className="text-[10px] font-semibold text-white/80 uppercase">Type</label>
+            <select value={cardio.type} onChange={(e) => updateCardioplegie({ type: e.target.value as any })}
+              className="w-full px-2 py-1.5 text-sm bg-white border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400">
+              <option value="">—</option>
+              <option value="antegrade">Antégrade</option>
+              <option value="retrograde">Rétrograde</option>
+              <option value="mixte">Mixte</option>
+            </select>
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-[10px] font-semibold text-white/80 uppercase">Volume (mL)</label>
+            <input type="number" value={cardio.volume || ''} onChange={(e) => updateCardioplegie({ volume: Number(e.target.value) })}
+              className="w-full px-2 py-1.5 text-sm bg-white border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400 tabular-nums" placeholder="0" />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-[10px] font-semibold text-white/80 uppercase">Concentration K⁺</label>
+            <input type="text" value={cardio.concentration} onChange={(e) => updateCardioplegie({ concentration: e.target.value })}
+              className="w-full px-2 py-1.5 text-sm bg-white border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400" placeholder="mEq/L" />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-[10px] font-semibold text-white/80 uppercase">Durée arrêt (min)</label>
+            <input type="number" value={cardio.dureeArret || ''} onChange={(e) => updateCardioplegie({ dureeArret: Number(e.target.value) })}
+              className="w-full px-2 py-1.5 text-sm bg-white border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400 tabular-nums" placeholder="0" />
+          </div>
+        </div>
+
+        {/* Administrations */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Administrations</p>
+            <button onClick={() => {
+              const heure = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+              addAdminCardio({ heure, volume: 200, type: cardio.type || 'antegrade' })
+              addEvenement({ heure, type: 'cardioplégie', description: `Cardioplégie ${cardio.type || ''} ${200}mL` })
+            }} className="text-xs text-gray-500 hover:text-black font-medium px-2 py-1 hover:bg-gray-100 rounded-lg transition-colors">
+              + Admin
+            </button>
+          </div>
+          {cardio.administrations.length > 0 && (
+            <div className="space-y-1">
+              {cardio.administrations.map((admin, idx) => (
+                <div key={idx} className="flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-lg">
+                  <Clock size={12} className="text-gray-300" />
+                  <span className="text-xs font-mono text-gray-400 w-12">{admin.heure}</span>
+                  <span className="text-xs text-gray-500">{admin.type}</span>
+                  <span className="text-xs font-semibold text-gray-700">{admin.volume} mL</span>
+                  <button onClick={() => removeAdminCardio(idx)} className="ml-auto text-gray-300 hover:text-red-500">
+                    <Trash2 size={12} />
+                  </button>
+                </div>
+              ))}
+              <div className="text-right">
+                <span className="text-xs text-gray-400">Total: </span>
+                <span className="text-xs font-bold text-gray-700">{cardio.administrations.reduce((s, a) => s + a.volume, 0)} mL</span>
+              </div>
+            </div>
+          )}
+        </div>
+      </Card>
 
       {/* Paramètres */}
       <Card>

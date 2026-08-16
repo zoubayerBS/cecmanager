@@ -95,12 +95,23 @@ export interface ParamHistoryEntry {
   k: number
 }
 
+export interface CardioplegieData {
+  type: 'antegrade' | 'retrograde' | 'mixte' | ''
+  volume: number
+  concentration: string
+  temperature: number
+  arretAortique: boolean
+  dureeArret: number
+  administrations: { heure: string; volume: number; type: string }[]
+}
+
 export interface CaseData {
   id: string
   patient: PatientData
   intervention: InterventionData
   materiel: MaterielData
   parametres: ParametresData
+  cardioplegie: CardioplegieData
   checklistPre: ChecklistItem[]
   checklistPost: ChecklistItem[]
   bilan: BilanItem[]
@@ -134,6 +145,9 @@ interface WorkflowStore {
   updateIntervention: (data: Partial<InterventionData>) => void
   updateMateriel: (data: Partial<MaterielData>) => void
   updateParametres: (data: Partial<ParametresData>) => void
+  updateCardioplegie: (data: Partial<CardioplegieData>) => void
+  addAdminCardio: (admin: { heure: string; volume: number; type: string }) => void
+  removeAdminCardio: (index: number) => void
   addPrimeItem: (item: { name: string; quantite: number }) => void
   removePrimeItem: (index: number) => void
   updatePrimeItem: (index: number, data: { name?: string; quantite?: number }) => void
@@ -185,6 +199,10 @@ function createNewCase(): CaseData {
       debit: 4.5, pam: 70, temperature: 37, hct: 30, sao2: 100, svo2: 75,
       pao2: 200, pco2: 40, ph: 7.40, hb: 12, k: 4.0, lactates: 1.0, glycemie: 6.0,
     },
+    cardioplegie: {
+      type: '', volume: 0, concentration: '', temperature: 4,
+      arretAortique: false, dureeArret: 0, administrations: [],
+    },
     checklistPre: [
       { id: '1', label: 'Patient identifié, consentement vérifié', checked: false },
       { id: '2', label: 'ACT basale mesuré', checked: false },
@@ -227,6 +245,7 @@ function migrateCase(c: any): CaseData {
     intervention: { ...def.intervention, ...(c.intervention || {}) },
     materiel: { ...def.materiel, ...(c.materiel || {}), primeComposition: c.materiel?.primeComposition || def.materiel.primeComposition },
     parametres: { ...def.parametres, ...(c.parametres || {}) },
+    cardioplegie: { ...def.cardioplegie, ...(c.cardioplegie || {}), administrations: c.cardioplegie?.administrations || [] },
     checklistPre: c.checklistPre || def.checklistPre,
     checklistPost: c.checklistPost || def.checklistPost,
     bilan: c.bilan || [],
@@ -305,6 +324,15 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => ({
     }
     return { caseData: { ...s.caseData, parametres: newParams, paramHistory } }
   }),
+  updateCardioplegie: (data) => set((s) => ({
+    caseData: { ...s.caseData, cardioplegie: { ...s.caseData.cardioplegie, ...data } }
+  })),
+  addAdminCardio: (admin) => set((s) => ({
+    caseData: { ...s.caseData, cardioplegie: { ...s.caseData.cardioplegie, administrations: [...s.caseData.cardioplegie.administrations, admin] } }
+  })),
+  removeAdminCardio: (index) => set((s) => ({
+    caseData: { ...s.caseData, cardioplegie: { ...s.caseData.cardioplegie, administrations: s.caseData.cardioplegie.administrations.filter((_, i) => i !== index) } }
+  })),
   addPrimeItem: (item) => set((s) => ({
     caseData: { ...s.caseData, materiel: { ...s.caseData.materiel, primeComposition: [...s.caseData.materiel.primeComposition, item] } }
   })),

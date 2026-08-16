@@ -437,8 +437,8 @@ export function StepCEC() {
                       <span className="text-sm font-medium text-gray-800">{evt.description}</span>
                     </div>
                   </div>
-                  <button onClick={() => removeEvenement(evt.id)} className="shrink-0 p-1 text-gray-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100">
-                    <Trash2 size={12} />
+                  <button onClick={() => removeEvenement(evt.id)} className="shrink-0 p-1.5 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors">
+                    <Trash2 size={13} />
                   </button>
                 </div>
               ))}

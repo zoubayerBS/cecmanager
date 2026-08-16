@@ -403,16 +403,13 @@ export function StepCEC() {
       <Card>
         <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Cardioplégie</h3>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
-          <div className="flex flex-col gap-1">
-            <label className="text-[10px] font-semibold text-white/80 uppercase">Type</label>
-            <select value={cardio.type} onChange={(e) => updateCardioplegie({ type: e.target.value as any })}
-              className="w-full px-2 py-1.5 text-sm bg-white border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400">
-              <option value="">—</option>
-              <option value="antegrade">Antégrade</option>
-              <option value="retrograde">Rétrograde</option>
-              <option value="mixte">Mixte</option>
-            </select>
-          </div>
+          <Select label="Type" value={cardio.type} onChange={(v) => updateCardioplegie({ type: v as any })}
+            options={[
+              { value: '', label: '—' },
+              { value: 'antegrade', label: 'Antégrade' },
+              { value: 'retrograde', label: 'Rétrograde' },
+              { value: 'mixte', label: 'Mixte' },
+            ]} />
           <div className="flex flex-col gap-1">
             <label className="text-[10px] font-semibold text-white/80 uppercase">Volume (mL)</label>
             <input type="number" value={cardio.volume || ''} onChange={(e) => updateCardioplegie({ volume: Number(e.target.value) })}

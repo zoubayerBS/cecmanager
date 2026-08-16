@@ -388,12 +388,38 @@ export function StepCEC() {
           <Param icon={<HeartPulse size={14} />} label="PAM" value={p.pam} onChange={(v) => updateParametres({ pam: v })} unit="mmHg" alert={p.pam < 60} gradient="bg-gradient-to-br from-rose-400 to-rose-500 text-white shadow-md shadow-rose-200" />
           <Param icon={<Thermometer size={14} />} label="Temp" value={p.temperature} onChange={(v) => updateParametres({ temperature: v })} unit="°C" step={0.1} gradient="bg-gradient-to-br from-cyan-400 to-cyan-500 text-white shadow-md shadow-cyan-200" />
           <Param icon={<Droplets size={14} />} label="Ht" value={p.hct} onChange={(v) => updateParametres({ hct: v })} unit="%" step={0.1} alert={p.hct < 25} gradient="bg-gradient-to-br from-orange-400 to-orange-500 text-white shadow-md shadow-orange-200" />
-          <Param icon={<Activity size={14} />} label="SvO₂" value={p.svo2} onChange={(v) => updateParametres({ svo2: v })} unit="%" alert={p.svo2 < 65} gradient="bg-gradient-to-br from-emerald-400 to-emerald-500 text-white shadow-md shadow-emerald-200" />
+          <Param icon={<Activity size={14} />} label="PaO₂" value={p.pao2} onChange={(v) => updateParametres({ pao2: v })} unit="mmHg" gradient="bg-gradient-to-br from-emerald-400 to-emerald-500 text-white shadow-md shadow-emerald-200" />
           <Param icon={<Zap size={14} />} label="Hb" value={p.hb} onChange={(v) => updateParametres({ hb: v })} unit="g/dL" step={0.1} alert={p.hb < 8} gradient="bg-gradient-to-br from-purple-400 to-purple-500 text-white shadow-md shadow-purple-200" />
           <Param icon={<Beaker size={14} />} label="Lactates" value={p.lactates} onChange={(v) => updateParametres({ lactates: v })} unit="mmol/L" step={0.1} alert={p.lactates > 2} gradient="bg-gradient-to-br from-amber-400 to-amber-500 text-white shadow-md shadow-amber-200" />
           <Param icon={<Zap size={14} />} label="K⁺" value={p.k} onChange={(v) => updateParametres({ k: v })} unit="mmol/L" step={0.1} gradient="bg-gradient-to-br from-indigo-400 to-indigo-500 text-white shadow-md shadow-indigo-200" />
         </div>
       </Card>
+
+      {/* DO₂i */}
+      {(() => {
+        const surface = Math.sqrt((caseData.patient.poids * caseData.patient.taille) / 3600)
+        const cao2 = (1.34 * p.hb * (p.sao2 / 100)) + (0.003 * p.pao2)
+        const do2 = cao2 * p.debit * 10
+        const do2i = surface > 0 ? do2 / surface : 0
+        const alert = do2i < 300
+        return (
+          <div className={`rounded-xl px-4 py-3 flex items-center justify-between border ${alert ? 'bg-red-50 border-red-200' : 'bg-white border-gray-200'}`}>
+            <div className="flex items-center gap-2">
+              <div className={`w-2.5 h-2.5 rounded-full ${alert ? 'bg-red-500 animate-pulse' : 'bg-emerald-500'}`} />
+              <div>
+                <span className="text-xs font-semibold text-gray-500">DO₂i</span>
+                <span className="text-[10px] text-gray-400 ml-1.5">Delivery O₂ indexé</span>
+              </div>
+            </div>
+            <div className="text-right">
+              <span className={`text-lg font-bold tabular-nums ${alert ? 'text-red-600' : 'text-gray-900'}`}>
+                {do2i > 0 ? Math.round(do2i) : '—'}
+              </span>
+              <span className="text-[10px] text-gray-400 ml-1">mL/min/m²</span>
+            </div>
+          </div>
+        )
+      })()}
 
       {/* Graphiques */}
       <Graphiques history={caseData.paramHistory} />

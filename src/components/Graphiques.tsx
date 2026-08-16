@@ -8,7 +8,7 @@ interface GraphiquesProps {
   history: ParamHistoryEntry[]
 }
 
-type ParamKey = 'pam' | 'svo2' | 'temperature' | 'hct' | 'hb' | 'lactates' | 'k' | 'debit'
+type ParamKey = 'pam' | 'pao2' | 'temperature' | 'hct' | 'hb' | 'lactates' | 'k' | 'debit'
 
 interface ParamConfig {
   key: ParamKey
@@ -19,7 +19,7 @@ interface ParamConfig {
 
 const PARAMS: ParamConfig[] = [
   { key: 'pam', label: 'PAM', unit: 'mmHg', color: '#f43f5e' },
-  { key: 'svo2', label: 'SvO₂', unit: '%', color: '#10b981' },
+  { key: 'pao2', label: 'PaO₂', unit: 'mmHg', color: '#10b981' },
   { key: 'temperature', label: 'Temp', unit: '°C', color: '#06b6d4' },
   { key: 'hct', label: 'Ht', unit: '%', color: '#f97316' },
   { key: 'hb', label: 'Hb', unit: 'g/dL', color: '#a855f7' },
@@ -29,14 +29,14 @@ const PARAMS: ParamConfig[] = [
 ]
 
 const PRESETS: { label: string; keys: ParamKey[] }[] = [
-  { label: 'Hémodynamique', keys: ['pam', 'debit', 'svo2'] },
+  { label: 'Hémodynamique', keys: ['pam', 'debit', 'pao2'] },
   { label: 'Respiration', keys: ['temperature', 'hct', 'hb'] },
   { label: 'Métabolisme', keys: ['lactates', 'k'] },
   { label: 'Tout', keys: PARAMS.map(p => p.key) },
 ]
 
 export function Graphiques({ history }: GraphiquesProps) {
-  const [selected, setSelected] = useState<ParamKey[]>(['pam', 'svo2', 'temperature'])
+  const [selected, setSelected] = useState<ParamKey[]>(['pam', 'pao2', 'temperature'])
 
   if (history.length < 2) {
     return (

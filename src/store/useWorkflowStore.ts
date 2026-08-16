@@ -88,7 +88,7 @@ export interface ParamHistoryEntry {
   pam: number
   temperature: number
   hct: number
-  svo2: number
+  pao2: number
   hb: number
   lactates: number
   k: number
@@ -272,7 +272,7 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => ({
         pam: newParams.pam,
         temperature: newParams.temperature,
         hct: newParams.hct,
-        svo2: newParams.svo2,
+        pao2: newParams.pao2,
         hb: newParams.hb,
         lactates: newParams.lactates,
         k: newParams.k,

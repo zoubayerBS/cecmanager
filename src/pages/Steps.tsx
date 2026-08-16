@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useWorkflowStore } from '../store/useWorkflowStore'
 import { Graphiques } from '../components/Graphiques'
 import {
@@ -900,19 +900,55 @@ function Select({ label, value, onChange, options }: {
   )
 }
 
-function Param({ icon, label, value, onChange, unit, step, alert, gradient }: {
+function Param({ icon, label, value, onChange, unit, step = 1, alert, gradient }: {
   icon: React.ReactNode; label: string; value: number; onChange: (v: number) => void; unit: string; step?: number; alert?: boolean; gradient?: string
 }) {
+  const [swiping, setSwiping] = useState(false)
+  const [swipeDelta, setSwipeDelta] = useState(0)
+  const touchStart = useRef<{ y: number; value: number } | null>(null)
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStart.current = { y: e.touches[0].clientY, value }
+    setSwiping(true)
+    setSwipeDelta(0)
+  }
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!touchStart.current) return
+    const delta = touchStart.current.y - e.touches[0].clientY
+    const steps = Math.round(delta / 15)
+    setSwipeDelta(steps * step)
+    onChange(Math.round((touchStart.current.value + steps * step) * 10) / 10)
+  }
+
+  const handleTouchEnd = () => {
+    touchStart.current = null
+    setSwiping(false)
+    setSwipeDelta(0)
+  }
+
   return (
-    <div className={`rounded-xl p-3 transition-all ${alert ? 'bg-gradient-to-br from-red-500 to-red-600 text-white shadow-md shadow-red-200' : gradient || 'bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200'}`}>
+    <div className={`rounded-xl p-3 transition-all ${alert ? 'bg-gradient-to-br from-red-500 to-red-600 text-white shadow-md shadow-red-200' : gradient || 'bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200'}`}
+      onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}>
       <div className="flex items-center gap-1.5 mb-2">
         <span className="text-white/80">{icon}</span>
         <span className="text-[10px] font-semibold uppercase tracking-wider text-white/80">{label}</span>
+        {swiping && swipeDelta !== 0 && (
+          <span className={`text-[9px] font-bold ml-auto ${swipeDelta > 0 ? 'text-white' : 'text-white/60'}`}>
+            {swipeDelta > 0 ? '▲' : '▼'} {swipeDelta > 0 ? '+' : ''}{Math.round(swipeDelta * 10) / 10}
+          </span>
+        )}
       </div>
       <div className="relative">
         <input type="number" value={value} step={step} onChange={(e) => onChange(Number(e.target.value) || 0)}
           className="w-full text-xl font-bold bg-transparent border-none focus:outline-none tabular-nums pr-8 text-white placeholder-white/50" />
         <span className="absolute right-1 top-1/2 -translate-y-1/2 text-[10px] text-white/60">{unit}</span>
+      </div>
+      <div className="flex justify-center gap-0.5 mt-1">
+        <button onClick={(e) => { e.stopPropagation(); onChange(Math.round((value - step) * 10) / 10) }}
+          className="w-7 h-5 flex items-center justify-center rounded bg-white/10 text-white/60 hover:bg-white/20 text-xs font-bold active:scale-95">−</button>
+        <button onClick={(e) => { e.stopPropagation(); onChange(Math.round((value + step) * 10) / 10) }}
+          className="w-7 h-5 flex items-center justify-center rounded bg-white/10 text-white/60 hover:bg-white/20 text-xs font-bold active:scale-95">+</button>
       </div>
     </div>
   )

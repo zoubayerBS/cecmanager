@@ -79,6 +79,7 @@ export interface Evenement {
   heure: string
   type: string
   description: string
+  note?: string
 }
 
 export interface ParamHistoryEntry {

@@ -439,10 +439,26 @@ export function StepCEC() {
               <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">{group.cat}</p>
               <div className="flex flex-wrap gap-1.5">
                 {group.items.map((evt) => (
-                  <button key={evt} onClick={() => addEvenement({
-                    heure: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
-                    type: evt.toLowerCase(), description: evt,
-                  })} className="px-3 py-1.5 bg-gray-100 rounded-lg text-xs font-medium hover:bg-gray-200 transition-colors">
+                  <button key={evt}
+                    onClick={() => addEvenement({
+                      heure: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+                      type: evt.toLowerCase(), description: evt,
+                    })}
+                    onPointerDown={(e) => {
+                      const timer = setTimeout(() => {
+                        const note = prompt(`Note pour "${evt}" :`)
+                        if (note !== null && note.trim()) {
+                          addEvenement({
+                            heure: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+                            type: evt.toLowerCase(), description: evt, note: note.trim(),
+                          })
+                        }
+                      }, 500)
+                      const cancel = () => { clearTimeout(timer); e.currentTarget.removeEventListener('pointerup', cancel); e.currentTarget.removeEventListener('pointerleave', cancel) }
+                      e.currentTarget.addEventListener('pointerup', cancel)
+                      e.currentTarget.addEventListener('pointerleave', cancel)
+                    }}
+                    className="px-3 py-1.5 bg-gray-100 rounded-lg text-xs font-medium hover:bg-gray-200 active:bg-gray-300 transition-colors select-none">
                     + {evt}
                   </button>
                 ))}
@@ -466,6 +482,9 @@ export function StepCEC() {
                       <span className="text-xs font-mono text-gray-400">{evt.heure}</span>
                       <span className="text-sm font-medium text-gray-800">{evt.description}</span>
                     </div>
+                    {evt.note && (
+                      <p className="text-xs text-gray-500 mt-0.5 ml-[52px] italic">"{evt.note}"</p>
+                    )}
                   </div>
                   <button onClick={() => removeEvenement(evt.id)} className="shrink-0 p-1.5 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors">
                     <Trash2 size={13} />

@@ -144,7 +144,7 @@ export function exportPDF(c: CaseData): void {
   // ── Événements ──
   if (c.evenements.length > 0) {
     sectionTitle('CHRONOLOGIE')
-    c.evenements.forEach((evt) => {
+    ;[...c.evenements].sort((a, b) => a.heure.localeCompare(b.heure)).forEach((evt) => {
       if (y > 275) { doc.addPage(); y = 15 }
       doc.setFontSize(7.5)
       doc.setFont('helvetica', 'normal')

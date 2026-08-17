@@ -546,7 +546,7 @@ export function StepCEC() {
           <div className="relative mt-4 pt-4 border-t border-gray-100 max-h-64 overflow-y-auto">
             <div className="absolute left-[19px] top-4 bottom-0 w-px bg-gray-200" />
             <div className="space-y-0">
-              {[...caseData.evenements].map((evt, idx) => (
+              {[...caseData.evenements].sort((a, b) => a.heure.localeCompare(b.heure)).map((evt, idx) => (
                 <div key={evt.id} className="relative flex items-start gap-3 py-2.5 group">
                   <div className="relative z-10 w-10 shrink-0 flex justify-center">
                     <div className={`w-2.5 h-2.5 rounded-full border-2 border-white ${

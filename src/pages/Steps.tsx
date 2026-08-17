@@ -841,6 +841,8 @@ function DatePicker({ label, value, onChange, required }: {
 
   const prevMonth = () => setViewDate(new Date(year, month - 1, 1))
   const nextMonth = () => setViewDate(new Date(year, month + 1, 1))
+  const prevYear = () => setViewDate(new Date(year - 1, month, 1))
+  const nextYear = () => setViewDate(new Date(year + 1, month, 1))
 
   const monthNames = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc']
 
@@ -863,13 +865,25 @@ function DatePicker({ label, value, onChange, required }: {
           <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg p-3 w-64">
             {/* Navigation */}
             <div className="flex items-center justify-between mb-3">
-              <button type="button" onClick={prevMonth} className="p-1 hover:bg-gray-100 rounded-lg">
-                <ChevronLeft size={16} className="text-gray-500" />
-              </button>
+              <div className="flex items-center gap-1">
+                <button type="button" onClick={prevYear} className="p-1 hover:bg-gray-100 rounded-lg" title="Année précédente">
+                  <ChevronLeft size={14} className="text-gray-500" />
+                  <ChevronLeft size={14} className="text-gray-500 -ml-2" />
+                </button>
+                <button type="button" onClick={prevMonth} className="p-1 hover:bg-gray-100 rounded-lg" title="Mois précédent">
+                  <ChevronLeft size={16} className="text-gray-500" />
+                </button>
+              </div>
               <span className="text-sm font-semibold text-gray-800">{monthNames[month]} {year}</span>
-              <button type="button" onClick={nextMonth} className="p-1 hover:bg-gray-100 rounded-lg">
-                <ChevronRight size={16} className="text-gray-500" />
-              </button>
+              <div className="flex items-center gap-1">
+                <button type="button" onClick={nextMonth} className="p-1 hover:bg-gray-100 rounded-lg" title="Mois suivant">
+                  <ChevronRight size={16} className="text-gray-500" />
+                </button>
+                <button type="button" onClick={nextYear} className="p-1 hover:bg-gray-100 rounded-lg" title="Année suivante">
+                  <ChevronRight size={14} className="text-gray-500" />
+                  <ChevronRight size={14} className="text-gray-500 -ml-2" />
+                </button>
+              </div>
             </div>
             {/* Jours */}
             <div className="grid grid-cols-7 gap-0.5">

@@ -293,6 +293,7 @@ export function StepCEC() {
   const cardio = caseData.cardioplegie
   const [noteModal, setNoteModal] = useState<{ evt: string; type: string } | null>(null)
   const [noteText, setNoteText] = useState('')
+  const [noteHeure, setNoteHeure] = useState('')
 
   const cecDuration = caseData.startTime
     ? Math.floor(((caseData.endTime ? new Date(caseData.endTime) : new Date()).getTime() - new Date(caseData.startTime).getTime()) / 60000)
@@ -310,17 +311,19 @@ export function StepCEC() {
 
   const handleLongPress = (evt: string, type: string) => {
     setNoteText('')
+    setNoteHeure(new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }))
     setNoteModal({ evt, type })
   }
 
   const confirmNote = () => {
     if (noteModal) {
       addEvenement({
-        heure: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+        heure: noteHeure,
         type: noteModal.type, description: noteModal.evt, note: noteText.trim() || undefined,
       })
       setNoteModal(null)
       setNoteText('')
+      setNoteHeure('')
     }
   }
 
@@ -594,6 +597,15 @@ export function StepCEC() {
               className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-xl resize-none focus:border-gray-400 focus:outline-none transition-colors"
               onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); confirmNote() } }}
             />
+            <div className="flex flex-col gap-1 mt-3">
+              <label className="text-xs font-medium text-gray-500">Heure</label>
+              <input
+                type="time"
+                value={noteHeure}
+                onChange={(e) => setNoteHeure(e.target.value)}
+                className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-xl focus:border-gray-400 focus:outline-none transition-colors"
+              />
+            </div>
             <div className="flex gap-2 mt-3">
               <button onClick={() => setNoteModal(null)}
                 className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">

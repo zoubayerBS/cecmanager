@@ -2,6 +2,21 @@ import { useState } from 'react'
 import { Activity, Mail, Lock, User, ArrowRight, Eye, EyeOff, Stethoscope } from 'lucide-react'
 import { login, register } from '../lib/supabase'
 
+function getPasswordStrength(pw: string): { score: number; label: string; color: string } {
+  let score = 0
+  if (pw.length >= 8) score++
+  if (pw.length >= 12) score++
+  if (/[A-Z]/.test(pw)) score++
+  if (/[0-9]/.test(pw)) score++
+  if (/[^A-Za-z0-9]/.test(pw)) score++
+
+  if (score <= 1) return { score, label: 'Faible', color: 'bg-red-500' }
+  if (score <= 2) return { score, label: 'Moyen', color: 'bg-orange-500' }
+  if (score <= 3) return { score, label: 'Correct', color: 'bg-yellow-500' }
+  if (score <= 4) return { score, label: 'Fort', color: 'bg-green-500' }
+  return { score, label: 'Très fort', color: 'bg-green-600' }
+}
+
 interface AuthPageProps {
   onAuth: () => void
 }
@@ -20,6 +35,14 @@ export function AuthPage({ onAuth }: AuthPageProps) {
     setLoading(true)
     setError('')
     try {
+      if (mode === 'register') {
+        const strength = getPasswordStrength(password)
+        if (strength.score < 2) {
+          setError('Le mot de passe est trop faible. Utilisez 8+ caractères avec majuscules, chiffres et symboles.')
+          setLoading(false)
+          return
+        }
+      }
       if (mode === 'login') {
         await login(email, password)
       } else {
@@ -100,9 +123,19 @@ export function AuthPage({ onAuth }: AuthPageProps) {
               </button>
             </div>
 
-            {mode === 'register' && (
-              <p className="text-[11px] text-gray-400">6 caractères minimum</p>
-            )}
+            {mode === 'register' && password.length > 0 && (() => {
+                const strength = getPasswordStrength(password)
+                return (
+                  <div className="space-y-1">
+                    <div className="flex gap-1">
+                      {Array.from({ length: 5 }, (_, i) => (
+                        <div key={i} className={`h-1 flex-1 rounded-full ${i < strength.score ? strength.color : 'bg-gray-200'}`} />
+                      ))}
+                    </div>
+                    <p className="text-[11px] text-gray-400">Force: {strength.label}</p>
+                  </div>
+                )
+              })()}
 
             {error && (
               <div className="bg-red-50 border border-red-100 rounded-xl px-4 py-3">

@@ -1,6 +1,8 @@
 import { create } from 'zustand'
 import { v4 as uuidv4 } from 'uuid'
 import { saveCaseToDB, deleteCaseFromDB, fetchCases } from '../lib/cases'
+import { PatientSchema, ParametresSchema, sanitizeString } from '../validation/schemas'
+import { logger } from '../lib/logger'
 
 // ===== Types =====
 export type StepId = 'patient' | 'intervention' | 'materiel' | 'pre-check' | 'cec' | 'bilan' | 'rapport'
@@ -296,17 +298,36 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => ({
     steps: s.steps.map((st) => st.id === step ? { ...st, completed: true } : st)
   })),
 
-  updatePatient: (data) => set((s) => ({
-    caseData: { ...s.caseData, patient: { ...s.caseData.patient, ...data } }
-  })),
-  updateIntervention: (data) => set((s) => ({
-    caseData: { ...s.caseData, intervention: { ...s.caseData.intervention, ...data } }
-  })),
+  updatePatient: (data) => set((s) => {
+    const base = { ...s.caseData.patient, ...data }
+    const result = PatientSchema.safeParse({
+      ...base,
+      nom: base.nom ? sanitizeString(base.nom, 200) : base.nom,
+      prenom: base.prenom ? sanitizeString(base.prenom, 200) : base.prenom,
+    })
+    if (!result.success) return s
+    return { caseData: { ...s.caseData, patient: result.data as PatientData } }
+  }),
+  updateIntervention: (data) => set((s) => {
+    const base = { ...s.caseData.intervention, ...data }
+    const sanitized = {
+      ...base,
+      type: base.type ? sanitizeString(base.type, 200) : base.type,
+      chirurgien: base.chirurgien ? sanitizeString(base.chirurgien, 200) : base.chirurgien,
+      anesthesiste: base.anesthesiste ? sanitizeString(base.anesthesiste, 200) : base.anesthesiste,
+      perfusionniste: base.perfusionniste ? sanitizeString(base.perfusionniste, 200) : base.perfusionniste,
+      assistant: base.assistant ? sanitizeString(base.assistant, 200) : base.assistant,
+    }
+    return { caseData: { ...s.caseData, intervention: sanitized as InterventionData } }
+  }),
   updateMateriel: (data) => set((s) => ({
     caseData: { ...s.caseData, materiel: { ...s.caseData.materiel, ...data } }
   })),
   updateParametres: (data) => set((s) => {
-    const newParams = { ...s.caseData.parametres, ...data }
+    const merged = { ...s.caseData.parametres, ...data }
+    const result = ParametresSchema.safeParse(merged)
+    if (!result.success) return s
+    const newParams = result.data
     const shouldRecord = s.caseData.isRunning && s.caseData.startTime
     let paramHistory = s.caseData.paramHistory
     if (shouldRecord) {
@@ -447,7 +468,7 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => ({
       const updated = idx >= 0 ? cases.map((c) => c.id === caseData.id ? caseData : c) : [caseData, ...cases]
       set({ cases: updated })
     } catch (err) {
-      console.error('Failed to save case:', err)
+      logger.error('Failed to save case', err)
     }
   },
 
@@ -470,7 +491,7 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => ({
       const { cases } = get()
       set({ cases: cases.filter((c) => c.id !== id) })
     } catch (err) {
-      console.error('Failed to delete case:', err)
+      logger.error('Failed to delete case', err)
     }
   },
 
@@ -479,7 +500,7 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => ({
       const cases = await fetchCases()
       set({ cases: cases.map(migrateCase) })
     } catch (err) {
-      console.error('Failed to fetch cases:', err)
+      logger.error('Failed to fetch cases', err)
     }
   },
 }))

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { supabase } from '../lib/supabase'
+import { logger } from '../lib/logger'
 import { Menu, User, Mail, Shield, LogOut, ChevronRight, Save } from 'lucide-react'
 
 export function ProfilePage({ onOpenSidebar, user }: { onOpenSidebar?: () => void; user: any }) {
@@ -14,7 +15,7 @@ export function ProfilePage({ onOpenSidebar, user }: { onOpenSidebar?: () => voi
       setSaved(true)
       setTimeout(() => setSaved(false), 2000)
     } catch (err) {
-      console.error('Failed to update profile:', err)
+      logger.error('Failed to update profile', err)
     } finally {
       setSaving(false)
     }

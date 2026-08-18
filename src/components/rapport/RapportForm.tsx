@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { v4 as uuidv4 } from 'uuid'
 import { format } from 'date-fns'
 import { RapportCECSchema } from '../../rapport/types'
 import type { RapportCEC } from '../../rapport/types'
 import { useAutoSave } from '../../hooks/useAutoSave'
+import { getRapport } from '../../rapport/storage'
 import { FormSection } from './FormSection'
 import { Field } from './Field'
 
@@ -47,17 +48,17 @@ interface RapportFormProps {
 }
 
 export function RapportForm({ rapportId, onSave }: RapportFormProps) {
-  const [rapport, setRapport] = useState<RapportCEC>(() => {
+  const [rapport, setRapport] = useState<RapportCEC>(createEmptyRapport())
+  const [loading, setLoading] = useState(!!rapportId)
+
+  useEffect(() => {
     if (rapportId) {
-      const saved = localStorage.getItem('cec-rapports')
-      if (saved) {
-        const all = JSON.parse(saved) as RapportCEC[]
-        const found = all.find((r) => r.id === rapportId)
-        if (found) return found
-      }
+      getRapport(rapportId).then((found) => {
+        if (found) setRapport(found)
+        setLoading(false)
+      })
     }
-    return createEmptyRapport()
-  })
+  }, [rapportId])
 
   const [errors, setErrors] = useState<Record<string, string[]>>({})
   const [showSuccess, setShowSuccess] = useState(false)
@@ -97,6 +98,14 @@ export function RapportForm({ rapportId, onSave }: RapportFormProps) {
   }
 
   const id = rapport.identification
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-16">
+        <span className="w-6 h-6 border-2 border-gray-300 border-t-black rounded-full animate-spin" />
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-4 pb-8">

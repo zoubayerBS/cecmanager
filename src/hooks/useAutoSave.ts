@@ -6,10 +6,10 @@ export function useAutoSave(rapport: RapportCEC, enabled = true) {
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const lastSavedRef = useRef<string>('')
 
-  const save = useCallback(() => {
+  const save = useCallback(async () => {
     const data = JSON.stringify(rapport)
     if (data !== lastSavedRef.current) {
-      saveRapport(rapport)
+      await saveRapport(rapport)
       lastSavedRef.current = data
     }
   }, [rapport])

@@ -43,3 +43,37 @@ create trigger cases_updated_at
   before update on cases
   for each row
   execute function update_updated_at();
+
+-- Table des rapports CEC
+create table if not exists rapports (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users(id) on delete cascade not null,
+  data jsonb not null default '{}',
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+create index if not exists rapports_user_id_idx on rapports (user_id);
+
+alter table rapports enable row level security;
+
+create policy "Users can view own rapports"
+  on rapports for select
+  using (auth.uid() = user_id);
+
+create policy "Users can insert own rapports"
+  on rapports for insert
+  with check (auth.uid() = user_id);
+
+create policy "Users can update own rapports"
+  on rapports for update
+  using (auth.uid() = user_id);
+
+create policy "Users can delete own rapports"
+  on rapports for delete
+  using (auth.uid() = user_id);
+
+create trigger rapports_updated_at
+  before update on rapports
+  for each row
+  execute function update_updated_at();

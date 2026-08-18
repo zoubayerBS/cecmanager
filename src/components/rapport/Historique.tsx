@@ -14,7 +14,7 @@ export function Historique({ onEdit, onNew }: HistoriqueProps) {
   const [search, setSearch] = useState('')
 
   useEffect(() => {
-    setRapports(loadRapports())
+    loadRapports().then(setRapports)
   }, [])
 
   const filtered = rapports.filter((r) => {
@@ -27,10 +27,10 @@ export function Historique({ onEdit, onNew }: HistoriqueProps) {
     )
   })
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm('Supprimer ce rapport ?')) {
-      deleteRapport(id)
-      setRapports(loadRapports())
+      await deleteRapport(id)
+      setRapports(await loadRapports())
     }
   }
 

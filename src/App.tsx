@@ -8,6 +8,7 @@ import { FormulasPage } from './pages/FormulasPage'
 import { ProfilePage } from './pages/ProfilePage'
 import { AuthPage } from './pages/AuthPage'
 import { isLoggedIn, logout, getCurrentUser, onAuthChange } from './lib/supabase'
+import { useSessionTimeout } from './hooks/useSessionTimeout'
 import {
   StepPatient,
   StepIntervention,
@@ -47,6 +48,8 @@ export default function App() {
     setAuthenticated(false)
     setUser(null)
   }
+
+  useSessionTimeout(handleLogout)
 
   const userName = user?.user_metadata?.name
 

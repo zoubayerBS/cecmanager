@@ -1,32 +1,70 @@
-import type { RapportCEC } from './types'
+import { supabase } from '../lib/supabase'
+import { RapportCECSchema, type RapportCEC } from './types'
+import { logger } from '../lib/logger'
 
-const STORAGE_KEY = 'cec-rapports'
+export async function loadRapports(): Promise<RapportCEC[]> {
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return []
 
-export function loadRapports(): RapportCEC[] {
-  try {
-    const data = localStorage.getItem(STORAGE_KEY)
-    return data ? JSON.parse(data) : []
-  } catch {
+  const { data, error } = await supabase
+    .from('rapports')
+    .select('data')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false })
+
+  if (error) {
+    logger.error('Failed to load rapports', error)
     return []
   }
+
+  return (data || [])
+    .map((row) => {
+      const result = RapportCECSchema.safeParse(row.data)
+      return result.success ? result.data : null
+    })
+    .filter((r): r is RapportCEC => r !== null)
 }
 
-export function saveRapport(rapport: RapportCEC): void {
-  const rapports = loadRapports()
-  const index = rapports.findIndex((r) => r.id === rapport.id)
-  if (index >= 0) {
-    rapports[index] = rapport
-  } else {
-    rapports.unshift(rapport)
+export async function saveRapport(rapport: RapportCEC): Promise<boolean> {
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return false
+
+  const { error } = await supabase
+    .from('rapports')
+    .upsert(
+      { id: rapport.id, user_id: user.id, data: rapport },
+      { onConflict: 'id' }
+    )
+
+  if (error) {
+    logger.error('Failed to save rapport', error)
+    return false
   }
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(rapports))
+  return true
 }
 
-export function deleteRapport(id: string): void {
-  const rapports = loadRapports().filter((r) => r.id !== id)
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(rapports))
+export async function deleteRapport(id: string): Promise<boolean> {
+  const { error } = await supabase
+    .from('rapports')
+    .delete()
+    .eq('id', id)
+
+  if (error) {
+    logger.error('Failed to delete rapport', error)
+    return false
+  }
+  return true
 }
 
-export function getRapport(id: string): RapportCEC | null {
-  return loadRapports().find((r) => r.id === id) || null
+export async function getRapport(id: string): Promise<RapportCEC | null> {
+  const { data, error } = await supabase
+    .from('rapports')
+    .select('data')
+    .eq('id', id)
+    .single()
+
+  if (error || !data) return null
+
+  const result = RapportCECSchema.safeParse(data.data)
+  return result.success ? result.data : null
 }

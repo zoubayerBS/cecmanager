@@ -808,48 +808,70 @@ function Grid({ children }: { children: React.ReactNode }) {
   return <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">{children}</div>
 }
 
+function ScrollPicker({ items, selected, onSelect, label }: {
+  items: { value: number; label: string }[]; selected: number; onSelect: (v: number) => void; label: string
+}) {
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (containerRef.current && selected) {
+      const idx = items.findIndex((i) => i.value === selected)
+      if (idx >= 0) {
+        const el = containerRef.current.children[idx] as HTMLElement
+        if (el) el.scrollIntoView({ block: 'center' })
+      }
+    }
+  }, [selected, items])
+
+  return (
+    <div className="flex flex-col items-center flex-1">
+      <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">{label}</p>
+      <div ref={containerRef}
+        className="h-40 overflow-y-auto snap-y snap-mandatory scrollbar-hide">
+        {items.map((item) => (
+          <button key={item.value} type="button" onClick={() => onSelect(item.value)}
+            className={`w-full h-10 flex items-center justify-center snap-center text-sm font-medium transition-colors rounded-lg ${
+              item.value === selected ? 'bg-black text-white' : 'text-gray-500 hover:bg-gray-50'
+            }`}>
+            {item.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 function DatePicker({ label, value, onChange, required }: {
   label: string; value: string; onChange: (v: string) => void; required?: boolean
 }) {
   const [open, setOpen] = useState(false)
-  const [viewDate, setViewDate] = useState(() => {
+  const [tempDate, setTempDate] = useState(() => {
     if (value) {
       const [y, m, d] = value.split('-').map(Number)
-      return new Date(y, m - 1, d)
+      return { year: y, month: m, day: d }
     }
-    return new Date()
+    const now = new Date()
+    return { year: now.getFullYear(), month: now.getMonth() + 1, day: now.getDate() }
   })
 
-  const year = viewDate.getFullYear()
-  const month = viewDate.getMonth()
+  const monthNames = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre']
 
-  const daysInMonth = new Date(year, month + 1, 0).getDate()
-  const firstDay = new Date(year, month, 1).getDay()
-  const startDay = firstDay === 0 ? 6 : firstDay - 1
-
-  const days = Array.from({ length: daysInMonth }, (_, i) => i + 1)
-  const blanks = Array.from({ length: startDay }, (_, i) => i)
-
-  const selectedDate = value ? value.split('-').map(Number) : null
-
-  const select = (d: number) => {
-    const mm = String(month + 1).padStart(2, '0')
-    const dd = String(d).padStart(2, '0')
-    onChange(`${year}-${mm}-${dd}`)
-    setOpen(false)
-  }
-
-  const prevMonth = () => setViewDate(new Date(year, month - 1, 1))
-  const nextMonth = () => setViewDate(new Date(year, month + 1, 1))
-  const prevYear = () => setViewDate(new Date(year - 1, month, 1))
-  const nextYear = () => setViewDate(new Date(year + 1, month, 1))
-
-  const monthNames = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc']
+  const daysInMonth = new Date(tempDate.year, tempDate.month, 0).getDate()
+  const days = Array.from({ length: daysInMonth }, (_, i) => ({ value: i + 1, label: String(i + 1) }))
+  const months = monthNames.map((name, i) => ({ value: i + 1, label: name }))
+  const years = Array.from({ length: 100 }, (_, i) => ({ value: 2010 - i, label: String(2010 - i) }))
 
   const displayValue = value ? (() => {
     const [y, m, d] = value.split('-')
     return `${d}/${m}/${y}`
   })() : ''
+
+  const handleConfirm = () => {
+    const mm = String(tempDate.month).padStart(2, '0')
+    const dd = String(tempDate.day).padStart(2, '0')
+    onChange(`${tempDate.year}-${mm}-${dd}`)
+    setOpen(false)
+  }
 
   return (
     <div className="flex flex-col gap-1 relative">
@@ -861,48 +883,23 @@ function DatePicker({ label, value, onChange, required }: {
       </button>
       {open && (
         <>
-          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg p-3 w-64">
-            {/* Navigation */}
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-1">
-                <button type="button" onClick={prevYear} className="p-1 hover:bg-gray-100 rounded-lg" title="Année précédente">
-                  <ChevronLeft size={14} className="text-gray-500" />
-                  <ChevronLeft size={14} className="text-gray-500 -ml-2" />
-                </button>
-                <button type="button" onClick={prevMonth} className="p-1 hover:bg-gray-100 rounded-lg" title="Mois précédent">
-                  <ChevronLeft size={16} className="text-gray-500" />
-                </button>
-              </div>
-              <span className="text-sm font-semibold text-gray-800">{monthNames[month]} {year}</span>
-              <div className="flex items-center gap-1">
-                <button type="button" onClick={nextMonth} className="p-1 hover:bg-gray-100 rounded-lg" title="Mois suivant">
-                  <ChevronRight size={16} className="text-gray-500" />
-                </button>
-                <button type="button" onClick={nextYear} className="p-1 hover:bg-gray-100 rounded-lg" title="Année suivante">
-                  <ChevronRight size={14} className="text-gray-500" />
-                  <ChevronRight size={14} className="text-gray-500 -ml-2" />
-                </button>
-              </div>
+          <div className="fixed inset-0 z-40 bg-black/40" onClick={() => setOpen(false)} />
+          <div className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-2xl p-4 pb-8 shadow-xl">
+            <div className="flex items-center justify-between mb-4 px-1">
+              <button type="button" onClick={() => setOpen(false)} className="text-sm text-gray-500 hover:text-gray-700">Annuler</button>
+              <span className="text-sm font-semibold text-gray-900">{label}</span>
+              <button type="button" onClick={handleConfirm} className="text-sm font-medium text-black hover:text-gray-700">OK</button>
             </div>
-            {/* Jours */}
-            <div className="grid grid-cols-7 gap-0.5">
-              {['L', 'M', 'M', 'J', 'V', 'S', 'D'].map((d, i) => (
-                <div key={i} className="text-[10px] font-medium text-gray-400 text-center py-1">{d}</div>
-              ))}
-              {blanks.map((b) => <div key={`b${b}`} />)}
-              {days.map((d) => {
-                const isSelected = selectedDate && selectedDate[0] === year && selectedDate[1] - 1 === month && selectedDate[2] === d
-                const isToday = new Date().getFullYear() === year && new Date().getMonth() === month && new Date().getDate() === d
-                return (
-                  <button key={d} type="button" onClick={() => select(d)}
-                    className={`w-8 h-8 mx-auto rounded-lg text-xs font-medium transition-colors ${
-                      isSelected ? 'bg-black text-white' : isToday ? 'bg-gray-100 text-gray-900' : 'text-gray-700 hover:bg-gray-50'
-                    }`}>
-                    {d}
-                  </button>
-                )
-              })}
+            <div className="flex gap-2">
+              <ScrollPicker items={days} selected={tempDate.day} onSelect={(d) => setTempDate({ ...tempDate, day: d })} label="Jour" />
+              <ScrollPicker items={months} selected={tempDate.month} onSelect={(m) => {
+                const maxDay = new Date(tempDate.year, m, 0).getDate()
+                setTempDate({ ...tempDate, month: m, day: Math.min(tempDate.day, maxDay) })
+              }} label="Mois" />
+              <ScrollPicker items={years} selected={tempDate.year} onSelect={(y) => {
+                const maxDay = new Date(y, tempDate.month, 0).getDate()
+                setTempDate({ ...tempDate, year: y, day: Math.min(tempDate.day, maxDay) })
+              }} label="Année" />
             </div>
           </div>
         </>

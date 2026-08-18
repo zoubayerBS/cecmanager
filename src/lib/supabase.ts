@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient, type Session } from '@supabase/supabase-js'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -25,15 +25,29 @@ export async function logout() {
   await supabase.auth.signOut()
 }
 
-export function isLoggedIn() {
-  return supabase.auth.getSession().then(({ data }) => !!data.session)
+export async function isLoggedIn(): Promise<boolean> {
+  try {
+    const timeout = new Promise<boolean>((r) => setTimeout(() => r(false), 3000))
+    const check = (async () => {
+      const { data } = await supabase.auth.getSession()
+      return !!data.session
+    })()
+    return await Promise.race([check, timeout])
+  } catch {
+    return false
+  }
 }
 
-export function getCurrentUser() {
-  return supabase.auth.getUser().then(({ data }) => data.user)
+export async function getCurrentUser() {
+  try {
+    const { data } = await supabase.auth.getUser()
+    return data.user
+  } catch {
+    return null
+  }
 }
 
-export function onAuthChange(callback: (session: any) => void) {
+export function onAuthChange(callback: (session: Session | null) => void) {
   return supabase.auth.onAuthStateChange((_event, session) => {
     callback(session)
   })

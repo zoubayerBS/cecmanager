@@ -1,10 +1,10 @@
-import { X, BookOpen, Home, User, Settings, LogOut, Activity } from 'lucide-react'
+import { X, BookOpen, Home, User, Settings, LogOut, Activity, BarChart3 } from 'lucide-react'
 
 interface SidebarProps {
   isOpen: boolean
   onClose: () => void
-  view: 'dashboard' | 'workflow' | 'formulas' | 'profile'
-  onNavigate: (view: 'dashboard' | 'workflow' | 'formulas' | 'profile') => void
+  view: 'dashboard' | 'workflow' | 'formulas' | 'profile' | 'stats'
+  onNavigate: (view: 'dashboard' | 'workflow' | 'formulas' | 'profile' | 'stats') => void
   onLogout: () => void
   userName?: string
 }
@@ -62,6 +62,18 @@ export function Sidebar({ isOpen, onClose, view, onNavigate, onLogout, userName 
             >
               <BookOpen size={20} />
               <span>Formules</span>
+            </button>
+
+            <button
+              onClick={() => { onNavigate('stats'); onClose() }}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+                view === 'stats'
+                  ? 'bg-black text-white'
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              <BarChart3 size={20} />
+              <span>Statistiques</span>
             </button>
 
             <button

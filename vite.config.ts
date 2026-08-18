@@ -5,7 +5,7 @@ import tailwindcss from '@tailwindcss/vite'
 import { readFileSync } from 'fs'
 import { resolve } from 'path'
 
-const pkg = JSON.parse(readFileSync(resolve(__dirname, 'package.json'), 'utf-8'))
+const pkg = JSON.parse(readFileSync(resolve(import.meta.dirname, 'package.json'), 'utf-8'))
 
 export default defineConfig({
   define: {
@@ -45,7 +45,7 @@ export default defineConfig({
         screenshots: []
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        globPatterns: ['**/*.{js,css,ico,png,svg,woff2}'],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,

@@ -1,12 +1,13 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, lazy, Suspense } from 'react'
 import { useWorkflowStore } from '../store/useWorkflowStore'
-import { Graphiques } from '../components/Graphiques'
 import {
   User, Scissors, Wrench, ClipboardCheck, Activity,
   Droplets, FileText, ChevronRight, ChevronLeft,
   Plus, Trash2, Play, Square, Clock, X, FlaskConical,
   Beaker, HeartPulse, Thermometer, Wind, Zap, Lock, Unlock,
 } from 'lucide-react'
+
+const Graphiques = lazy(() => import('../components/Graphiques').then(m => ({ default: m.Graphiques })))
 
 function pick<T>(arr: T[]): T { return arr[Math.floor(Math.random() * arr.length)] }
 function rand(min: number, max: number) { return Math.round((Math.random() * (max - min) + min) * 10) / 10 }
@@ -504,7 +505,9 @@ export function StepCEC() {
       })()}
 
       {/* Graphiques */}
-      <Graphiques history={caseData.paramHistory} />
+      <Suspense fallback={<div className="bg-white border border-gray-200 rounded-xl p-6 text-center"><div className="w-6 h-6 border-2 border-gray-300 border-t-black rounded-full animate-spin mx-auto" /></div>}>
+        <Graphiques history={caseData.paramHistory} />
+      </Suspense>
 
       {/* Événements */}
       <Card>

@@ -13,7 +13,9 @@ const NAV_ITEMS = [
 ] as const
 
 export function Stepper() {
-  const { steps, currentStep, goToStep } = useWorkflowStore()
+  const steps = useWorkflowStore(s => s.steps)
+  const currentStep = useWorkflowStore(s => s.currentStep)
+  const goToStep = useWorkflowStore(s => s.goToStep)
   const [menuOpen, setMenuOpen] = useState(false)
 
   const currentIdx = steps.findIndex((s) => s.id === currentStep)

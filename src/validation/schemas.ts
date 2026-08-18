@@ -23,10 +23,10 @@ export const InterventionSchema = z.object({
 })
 
 export const MaterielSchema = z.object({
-  oxygateur: z.string().max(200).optional(),
-  circuit: z.string().max(200).optional(),
-  canuleArterielle: z.string().max(50).optional(),
-  canuleVeineuse: z.string().max(50).optional(),
+  oxygateur: z.string().max(200),
+  circuit: z.string().max(200),
+  canuleArterielle: z.string().max(50),
+  canuleVeineuse: z.string().max(50),
   volumePrime: z.number().min(0).max(10000),
   primeComposition: z.array(z.object({
     name: z.string().max(200),
@@ -65,6 +65,22 @@ export const BilanItemSchema = z.object({
   categorie: z.string().max(100),
   volume: z.number().min(0).max(50000),
 })
+
+export const CardioplegieSchema = z.object({
+  type: z.string().max(100),
+  voie: z.string().max(100),
+  volume: z.number().min(0).max(5000),
+  concentration: z.string().max(200),
+  temperature: z.number().min(0).max(42),
+  arretAortique: z.boolean(),
+  administrations: z.array(z.object({
+    heure: z.string().max(5),
+    volume: z.number().min(0).max(5000),
+    type: z.string().max(100),
+  })),
+})
+
+export const NotesSchema = z.string().max(5000)
 
 export function sanitizeString(input: string, maxLen: number): string {
   return input.replace(/[<>"'&]/g, '').slice(0, maxLen)

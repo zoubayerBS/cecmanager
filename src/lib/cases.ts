@@ -30,10 +30,14 @@ export async function saveCaseToDB(caseData: CaseData): Promise<void> {
 }
 
 export async function deleteCaseFromDB(id: string): Promise<void> {
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Not authenticated')
+
   const { error } = await supabase
     .from('cases')
     .delete()
     .eq('id', id)
+    .eq('user_id', user.id)
 
   if (error) throw error
 }

@@ -9,7 +9,11 @@ import type { CaseData } from '../store/useWorkflowStore'
 const PAGE_SIZE = 5
 
 export function DashboardPage({ onOpenSidebar }: { onOpenSidebar?: () => void }) {
-  const { cases, loadCase, deleteCase, newCase, fetchCases } = useWorkflowStore()
+  const cases = useWorkflowStore(s => s.cases)
+  const loadCase = useWorkflowStore(s => s.loadCase)
+  const deleteCase = useWorkflowStore(s => s.deleteCase)
+  const newCase = useWorkflowStore(s => s.newCase)
+  const fetchCases = useWorkflowStore(s => s.fetchCases)
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(0)
   const [touchStart, setTouchStart] = useState<number | null>(null)
@@ -98,10 +102,12 @@ export function DashboardPage({ onOpenSidebar }: { onOpenSidebar?: () => void })
               <p className="text-xs text-gray-400">{cases.length} dossier{cases.length !== 1 ? 's' : ''} · v{__APP_VERSION__}</p>
             </div>
           </div>
-          <button onClick={handleNew}
-            className="flex items-center gap-2 px-4 py-2.5 bg-black text-white rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors">
-            <Plus size={16} /> Nouveau
-          </button>
+          <div className="flex items-center gap-2">
+            <button onClick={handleNew}
+              className="flex items-center gap-2 px-4 py-2.5 bg-black text-white rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors">
+              <Plus size={16} /> Nouveau
+            </button>
+          </div>
         </div>
       </div>
 

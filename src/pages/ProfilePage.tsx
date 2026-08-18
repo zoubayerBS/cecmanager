@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase'
 import { logger } from '../lib/logger'
 import { Menu, User, Mail, Shield, LogOut, ChevronRight, Save } from 'lucide-react'
 
-export function ProfilePage({ onOpenSidebar, user }: { onOpenSidebar?: () => void; user: any }) {
+export function ProfilePage({ onOpenSidebar, user, onLogout }: { onOpenSidebar?: () => void; user: any; onLogout?: () => void }) {
   const [name, setName] = useState(user?.user_metadata?.name || '')
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -96,7 +96,7 @@ export function ProfilePage({ onOpenSidebar, user }: { onOpenSidebar?: () => voi
         </button>
 
         {/* Déconnexion */}
-        <button onClick={() => supabase.auth.signOut()}
+        <button onClick={() => onLogout?.()}
           className="w-full flex items-center justify-center gap-2 py-3 border border-gray-200 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 transition-colors">
           <LogOut size={16} />
           Déconnexion

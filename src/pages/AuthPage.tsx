@@ -50,7 +50,16 @@ export function AuthPage({ onAuth }: AuthPageProps) {
       }
       onAuth()
     } catch (err: any) {
-      setError(err?.message || 'Erreur de connexion')
+      const msg = err?.message || ''
+      if (mode === 'login') {
+        setError('Email ou mot de passe incorrect.')
+      } else if (msg.includes('already registered')) {
+        setError('Un compte existe déjà avec cet email.')
+      } else if (msg.includes('email')) {
+        setError('Adresse email invalide.')
+      } else {
+        setError('Une erreur est survenue. Réessayez.')
+      }
     } finally {
       setLoading(false)
     }
@@ -115,7 +124,7 @@ export function AuthPage({ onAuth }: AuthPageProps) {
             </div>
             <div className="relative">
               <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Mot de passe" required minLength={6}
+              <input type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Mot de passe" required minLength={6} autoComplete="current-password"
                 className="w-full pl-10 pr-10 py-3 text-sm border border-gray-200 rounded-xl bg-gray-50 focus:border-gray-400 focus:bg-white focus:outline-none transition-colors" />
               <button type="button" onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">

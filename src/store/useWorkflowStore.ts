@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { v4 as uuidv4 } from 'uuid'
 import { saveCaseToDB, deleteCaseFromDB, fetchCases } from '../lib/cases'
-import { PatientSchema, ParametresSchema, sanitizeString } from '../validation/schemas'
+import { PatientSchema, ParametresSchema, MaterielSchema, CardioplegieSchema, BilanItemSchema, EvenementSchema, NotesSchema, sanitizeString } from '../validation/schemas'
 import { logger } from '../lib/logger'
 
 // ===== Types =====
@@ -128,7 +128,7 @@ export interface CaseData {
 }
 
 // ===== Store =====
-type ViewMode = 'dashboard' | 'workflow' | 'formulas' | 'profile'
+type ViewMode = 'dashboard' | 'workflow' | 'formulas' | 'profile' | 'stats'
 
 interface WorkflowStore {
   view: ViewMode
@@ -140,6 +140,7 @@ interface WorkflowStore {
   goToDashboard: () => void
   goToFormulas: () => void
   goToProfile: () => void
+  goToStats: () => void
   goToStep: (step: StepId) => void
   nextStep: () => void
   prevStep: () => void
@@ -276,6 +277,7 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => ({
   goToDashboard: () => set({ view: 'dashboard' }),
   goToFormulas: () => set({ view: 'formulas' }),
   goToProfile: () => set({ view: 'profile' }),
+  goToStats: () => set({ view: 'stats' }),
   goToStep: (step) => set({ currentStep: step }),
   
   nextStep: () => {
@@ -320,9 +322,23 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => ({
     }
     return { caseData: { ...s.caseData, intervention: sanitized as InterventionData } }
   }),
-  updateMateriel: (data) => set((s) => ({
-    caseData: { ...s.caseData, materiel: { ...s.caseData.materiel, ...data } }
-  })),
+  updateMateriel: (data) => set((s) => {
+    const base = { ...s.caseData.materiel, ...data }
+    const sanitized = {
+      ...base,
+      oxygateur: base.oxygateur ? sanitizeString(base.oxygateur, 200) : base.oxygateur,
+      circuit: base.circuit ? sanitizeString(base.circuit, 200) : base.circuit,
+      canuleArterielle: base.canuleArterielle ? sanitizeString(base.canuleArterielle, 50) : base.canuleArterielle,
+      canuleVeineuse: base.canuleVeineuse ? sanitizeString(base.canuleVeineuse, 50) : base.canuleVeineuse,
+      primeComposition: base.primeComposition.map(p => ({
+        ...p,
+        name: sanitizeString(p.name, 200),
+      })),
+    }
+    const result = MaterielSchema.safeParse(sanitized)
+    if (!result.success) return s
+    return { caseData: { ...s.caseData, materiel: result.data } }
+  }),
   updateParametres: (data) => set((s) => {
     const merged = { ...s.caseData.parametres, ...data }
     const result = ParametresSchema.safeParse(merged)
@@ -349,9 +365,20 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => ({
     }
     return { caseData: { ...s.caseData, parametres: newParams, paramHistory } }
   }),
-  updateCardioplegie: (data) => set((s) => ({
-    caseData: { ...s.caseData, cardioplegie: { ...s.caseData.cardioplegie, ...data } }
-  })),
+  updateCardioplegie: (data) => set((s) => {
+    const base = { ...s.caseData.cardioplegie, ...data }
+    const sanitized = {
+      ...base,
+      concentration: base.concentration ? sanitizeString(base.concentration, 200) : base.concentration,
+      administrations: base.administrations.map(a => ({
+        ...a,
+        type: sanitizeString(a.type, 100),
+      })),
+    }
+    const result = CardioplegieSchema.safeParse(sanitized)
+    if (!result.success) return s
+    return { caseData: { ...s.caseData, cardioplegie: result.data as CardioplegieData } }
+  }),
   addAdminCardio: (admin) => set((s) => ({
     caseData: {
       ...s.caseData,
@@ -390,23 +417,38 @@ export const useWorkflowStore = create<WorkflowStore>((set, get) => ({
     }
   })),
 
-  addBilanItem: (item) => set((s) => ({
-    caseData: { ...s.caseData, bilan: [...s.caseData.bilan, { ...item, id: uuidv4() }] }
-  })),
+  addBilanItem: (item) => set((s) => {
+    const newItem = { ...item, id: uuidv4(), categorie: sanitizeString(item.categorie, 100) }
+    const result = BilanItemSchema.safeParse(newItem)
+    if (!result.success) return s
+    return { caseData: { ...s.caseData, bilan: [...s.caseData.bilan, result.data] } }
+  }),
   removeBilanItem: (id) => set((s) => ({
     caseData: { ...s.caseData, bilan: s.caseData.bilan.filter((i) => i.id !== id) }
   })),
 
-  addEvenement: (evt) => set((s) => ({
-    caseData: { ...s.caseData, evenements: [...s.caseData.evenements, { ...evt, id: uuidv4() }] }
-  })),
+  addEvenement: (evt) => set((s) => {
+    const newEvt = {
+      ...evt,
+      id: uuidv4(),
+      type: sanitizeString(evt.type, 100),
+      description: sanitizeString(evt.description, 500),
+      note: evt.note ? sanitizeString(evt.note, 2000) : evt.note,
+    }
+    const result = EvenementSchema.safeParse(newEvt)
+    if (!result.success) return s
+    return { caseData: { ...s.caseData, evenements: [...s.caseData.evenements, result.data] } }
+  }),
   removeEvenement: (id) => set((s) => ({
     caseData: { ...s.caseData, evenements: s.caseData.evenements.filter((e) => e.id !== id) }
   })),
 
-  setNotes: (notes) => set((s) => ({
-    caseData: { ...s.caseData, notes }
-  })),
+  setNotes: (notes) => set((s) => {
+    const sanitized = sanitizeString(notes, 5000)
+    const result = NotesSchema.safeParse(sanitized)
+    if (!result.success) return s
+    return { caseData: { ...s.caseData, notes: result.data } }
+  }),
 
   startCEC: () => {
     const now = new Date().toISOString()
